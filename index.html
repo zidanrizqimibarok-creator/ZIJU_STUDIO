@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warung R&Z - Order</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <style>
+        :root { --primary: #d32f2f; --bg: #f8f9fa; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding-bottom: 140px; }
+        .header { background: var(--primary); color: white; padding: 20px 15px; text-align: center; border-radius: 0 0 20px 20px; }
+        .container { padding: 15px; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        /* List Menu Gaya Baru */
+        .menu-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .menu-info { flex: 1; padding-right: 10px; }
+        .menu-name { font-weight: bold; font-size: 15px; color: #333; display: block; }
+        .menu-price-label { color: var(--primary); font-size: 13px; font-weight: bold; margin-top: 2px; }
+        
+        .qty-ctrl { display: flex; align-items: center; gap: 8px; }
+        .btn-qty { width: 32px; height: 32px; border: none; background: var(--primary); color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .qty-num { font-weight: bold; min-width: 20px; text-align: center; font-size: 16px; }
+
+        .footer { position: fixed; bottom: 40px; left: 0; right: 0; padding: 15px; z-index: 100; }
+        .btn-kirim { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 5px 15px rgba(211,47,47,0.3); }
+
+        /* Overlay Struk */
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); flex-direction:column; align-items:center; justify-content:center; z-index:1000; color:white; padding: 20px; text-align:center; }
+        .struk { background: white; color: #333; padding: 20px; border-radius: 15px; width: 100%; max-width: 320px; text-align: left; box-sizing: border-box; }
+        .btn-x { background: #333; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="margin:0">Warung R&Z Center</h2>
+        <p style="margin:5px 0 0; font-size:12px; opacity:0.9;">🏠 Pesan & Langsung Antar</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <label style="font-size: 12px; font-weight: bold;">👤 Nama Anda</label>
+            <input type="text" id="nama" placeholder="Masukkan nama...">
+            <label style="font-size: 12px; font-weight: bold;">📍 Patokan Lokasi</label>
+            <textarea id="alamat" placeholder="Contoh: Depan SD, Pagar Coklat..."></textarea>
+            <label style="font-size: 12px; font-weight: bold;">💳 Pembayaran</label>
+            <select id="metode">
+                <option value="CASH">Bayar Cash (COD)</option>
+                <option value="DANA">Transfer DANA</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-size: 16px; border-bottom: 2px solid var(--primary); display:inline-block; padding-bottom:3px;">Daftar Menu</h3>
+            <div id="menu-container"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button onclick="kirim()" class="btn-kirim">KIRIM PESANAN ➔</button>
+    </div>
+
+    <div id="overlay">
+        <div id="loading-ui">⏳ Sedang Mengirim...</div>
+        <div id="result-ui" style="display:none; width:100%;">
+            <h3 style="color:#2ed573">PESANAN TERKIRIM!</h3>
+            <p id="wait-msg">Tunggu sebentar, Penjual sedang cek harga & ongkir...</p>
+            <div class="struk" id="struk-box" style="display:none; margin:auto;">
+                <h4 style="margin:0 0 10px; border-bottom:1px dashed #ccc; padding-bottom:5px;">STRUK PESANAN</h4>
+                <div id="struk-isi" style="font-size: 14px; line-height: 1.6;"></div>
+                <div id="note-box" style="background:#e3f2fd; padding:10px; margin-top:10px; border-radius:8px; font-size:13px; color:#0d47a1;"></div>
+                <button class="btn-x" onclick="tutup()">X TUTUP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '_5uX1A.i3oY3Q:-F3Wm3iLu9vzEUXraD6HVdeHjh_pxk7pEqyzCGwNhsg';
+        const ably = new Ably.Realtime(API_KEY);
+        const channel = ably.channels.get('warung-rz');
+
+        const menus = [
+            {id:1, n:"Bakso Beranak", p:10000}, {id:2, n:"Bakso Telur", p:10000}, {id:3, n:"Bakso Keju", p:10000},
+            {id:4, n:"Mie Bakso", p:10000}, {id:5, n:"Mie Ayam", p:10000}, {id:6, n:"Soteng", p:10000},
+            {id:7, n:"Kupat Tahu", p:10000}, {id:8, n:"Siomay", p:10000}, {id:9, n:"Kebab", p:10000},
+            {id:10, n:"Lumpia Basah", p:10000}, {id:11, n:"Mie Jebew", p:5000}, {id:12, n:"Batagorr", p:5000},
+            {id:13, n:"Burger", p:5000}, {id:14, n:"Wonton", p:5000}, {id:15, n:"Cordog Sosis", p:3000},
+            {id:16, n:"Cordog Moza", p:3000}, {id:17, n:"Dimsum Keju", p:2500}, {id:18, n:"Ayam Keju", p:2500},
+            {id:19, n:"Bola Bola Rambutan", p:2500}, {id:20, n:"Dimsum", p:2000}, {id:21, n:"Lumpia Ayam", p:2000},
+            {id:22, n:"Sempol", p:2000}, {id:23, n:"Es Teler Hemat", p:5000}, {id:24, n:"Es Teler Mantap", p:10000},
+            {id:25, n:"Es Teler Jumbo", p:20000}, {id:26, n:"Es Lilin Duren", p:1000}, 
+            {id:101, n:"Es Tea Jus", p:1000, r:1}, {id:102, n:"Pop Ice", p:3000, r:1}, {id:103, n:"Nutrisari Jeruk", p:3000}
+        ];
+
+        let basket = {};
+        let soldOutItems = [];
+
+        document.getElementById('nama').value = localStorage.getItem('rz_nama') || '';
+        document.getElementById('alamat').value = localStorage.getItem('rz_alamat') || '';
+
+        // Pantau Stok
+        channel.subscribe('update-stok', (msg) => {
+            soldOutItems = msg.data.soldOut;
+            render();
+        });
+
+        function render() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            menus.forEach(m => {
+                if (soldOutItems.includes(m.id)) return;
+                if (!basket[m.id]) basket[m.id] = 0;
+                
+                container.innerHTML += `
+                    <div class="menu-row">
+                        <div class="menu-info">
+                            <span class="menu-name">${m.n}</span>
+                            <span class="menu-price-label">Rp ${m.p.toLocaleString()}</span>
+                            ${m.r ? `<input type="text" id="rasa-${m.id}" placeholder="Ketik rasa..." style="height:25px; padding:2px 8px; font-size:11px; margin-top:5px;">` : ''}
+                        </div>
+                        <div class="qty-ctrl">
+                            <button class="btn-qty" onclick="updateQty(${m.id},-1)">-</button>
+                            <span class="qty-num" id="q-${m.id}">${basket[m.id]}</span>
+                            <button class="btn-qty" onclick="updateQty(${m.id},1)">+</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function updateQty(id, val) {
+            basket[id] = Math.max(0, (basket[id] || 0) + val);
+            document.getElementById('q-'+id).innerText = basket[id];
+        }
+
+        function kirim() {
+            const n = document.getElementById('nama').value;
+            const a = document.getElementById('alamat').value;
+            const m = document.getElementById('metode').value;
+            const sel = menus.filter(x => basket[x.id] > 0);
+
+            if (!n || !a || sel.length === 0) return alert("Isi nama, lokasi, dan pilih menu dulu!");
+
+            localStorage.setItem('rz_nama', n);
+            localStorage.setItem('rz_alamat', a);
+            document.getElementById('overlay').style.display = 'flex';
+
+            let tot = 0, det = "";
+            sel.forEach(x => {
+                let r = document.getElementById('rasa-'+x.id) ? " ("+document.getElementById('rasa-'+x.id).value+")" : "";
+                tot += (x.p * basket[x.id]);
+                det += `• ${x.n}${r} x${basket[x.id]}<br>`;
+            });
+
+            channel.publish('pesanan-baru', { nama: n, alamat: a, detail: det, total: tot, metode: m });
+        }
+
+        channel.subscribe('update-status', (msg) => {
+            if(msg.data.status === "DITERIMA") {
+                document.getElementById('loading-ui').style.display = 'none';
+                document.getElementById('result-ui').style.display = 'block';
+                document.getElementById('wait-msg').style.display = 'none';
+                document.getElementById('struk-box').style.display = 'block';
+                
+                let grand = msg.data.total + msg.data.ongkir;
+                document.getElementById('struk-isi').innerHTML = `
+                    Pesanan: Rp ${msg.data.total.toLocaleString()}<br>
+                    Ongkir: Rp ${msg.data.ongkir.toLocaleString()}<br>
+                    <hr>
+                    <b style="font-size:18px; color:var(--primary)">TOTAL: Rp ${grand.toLocaleString()}</b>
+                `;
+                document.getElementById('note-box').innerText = "Pesan Penjual: " + msg.data.note;
+            }
+        });
+
+        function tutup() { 
+            alert("Mohon tunggu sebentar ya, pesanan Anda sedang diproses buat dan antar!"); 
+            location.reload(); 
+        }
+
+        render();
+    </script>
+</body>
+</html>
