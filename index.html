@@ -2,127 +2,135 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>QWES TV.id v11 SUPREME</title>
+    <title>QWES TV.id v12 CORE</title>
     <style>
-        :root { --accent: #00f2fe; --red: #ff3b30; --glass: rgba(255,255,255,0.1); }
-        body, html { margin:0; padding:0; width:100%; height:100%; font-family: 'Segoe UI', sans-serif; background:#000; overflow:hidden; color:white; }
+        :root { --accent: #00f2fe; --red: #ff3b30; --green: #4cd964; }
+        body, html { margin:0; padding:0; width:100%; height:100%; font-family: 'Segoe UI', sans-serif; background:#000; color:white; overflow:hidden; }
 
-        /* WALLPAPER */
-        #wallpaper { position:fixed; inset:0; z-index:-2; background: radial-gradient(circle at bottom left, #0d1b2a, #000); }
-        .moon { position:absolute; top:8%; right:12%; width:100px; height:100px; background:#fff; border-radius:50%; box-shadow: 0 0 40px rgba(255,255,255,0.3); }
-        .meteor { position:absolute; width:150px; height:2px; background:linear-gradient(90deg, #fff, transparent); transform:rotate(-45deg); opacity:0; animation: mfall 3s linear infinite; }
-        @keyframes mfall { 0% {transform:translate(800px, -200px) rotate(-45deg); opacity:1;} 100% {transform:translate(-800px, 800px) rotate(-45deg); opacity:0;} }
+        /* FULL SCREEN WAKE LAYER */
+        #wake-layer { position:fixed; inset:0; z-index:9999999; background:rgba(0,0,0,0.01); display:flex; align-items:center; justify-content:center; }
 
-        /* BOOTING (NO BUTTON) */
-        #boot { position:fixed; inset:0; background:#000; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; animation: fadeOut 1s forwards 4s; }
-        .loader { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        /* BOOTING */
+        #boot { position:fixed; inset:0; background:#000; z-index:999999; display:none; flex-direction:column; align-items:center; justify-content:center; }
+        .spinner { width:60px; height:60px; border:5px solid #222; border-top:5px solid var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
         @keyframes spin { 100% {transform:rotate(360deg);} }
-        @keyframes fadeOut { 100% {opacity:0; visibility:hidden;} }
 
-        /* HOME CONTENT */
-        #home { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        #big-clock { font-size: 8rem; font-weight: 100; margin-bottom: 20px; }
+        /* DYNAMIC NOTIF (UPDATE SYSTEM) */
+        #update-notif { 
+            position:fixed; top:-100px; left:50%; transform:translateX(-50%); 
+            width:350px; background:#111; padding:15px; border-radius:20px; 
+            border:1px solid var(--green); z-index:1000000; transition:0.5s;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        #update-notif.show { top:20px; }
 
-        /* APP GRID */
-        #app-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 25px; padding: 20px; }
-        .app { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:0.3s; width: 110px; }
-        .app:hover { transform: scale(1.1); }
-        .icon-box { width: 85px; height: 85px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: bold; margin-bottom: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .app span { font-size: 13px; font-weight: 600; text-align: center; }
+        /* UI HOME */
+        #home { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:1s; }
+        #big-clock { font-size: 8rem; font-weight: 100; margin-bottom: 30px; }
 
-        /* FULL SCREEN OVERLAYS */
-        .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:100000; display:none; padding:60px; }
-        #web-ui { position:fixed; inset:0; background:#fff; z-index:90000; display:none; }
-        iframe { width:100%; height:100%; border:none; }
-        .close-btn { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:var(--red); color:white; padding:15px 45px; border-radius:50px; border:none; font-weight:bold; cursor:pointer; }
+        .app-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:20px; }
+        .app { cursor:pointer; text-align:center; transition:0.3s; }
+        .app:hover { transform:scale(1.1); }
+        .icon { width:80px; height:80px; border-radius:20px; background:var(--accent); color:#000; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:900; margin-bottom:10px; }
+
+        /* NO SIGNAL OVERLAY */
+        #no-signal { position:fixed; inset:0; background:url('https://media.giphy.com/media/oEI9uWUicG58Y/giphy.gif') center/cover; z-index:800000; display:none; }
+
+        /* CODE INJECTOR PANEL */
+        #injector { position:fixed; inset:0; background:#111; z-index:1000001; display:none; padding:40px; }
+        textarea { width:100%; height:70%; background:#000; color:var(--green); font-family:monospace; border:1px solid #333; }
     </style>
 </head>
-<body onload="initSystem()">
+<body onload="checkFirstRun()">
+
+    <div id="wake-layer" onclick="goFull()">
+        <p id="wake-txt" style="color:#222;">Touch to Start QWES TV</p>
+    </div>
 
     <div id="boot">
         <h1 style="letter-spacing:10px;">QWES TV</h1>
-        <div class="loader"></div>
-        <p style="margin-top:20px; color:var(--accent);">SUPREME ENGINE v11</p>
+        <div class="spinner"></div>
+        <p>REBOOTING SYSTEM...</p>
     </div>
 
-    <div id="wallpaper">
-        <div class="moon"></div>
-        <div class="meteor" style="top:5%; right:25%;"></div>
+    <div id="update-notif">
+        <span>Sistem Update Tersedia ✅</span>
+        <button onclick="rebootSystem()" style="background:var(--green); border:none; border-radius:5px; padding:5px 15px; cursor:pointer; font-weight:bold;">INSTAL & CENTANG</button>
     </div>
+
+    <div id="no-signal"></div>
 
     <div id="home">
         <div id="big-clock">00:00</div>
-        <div id="app-container">
-            <div class="app" onclick="openApp('https://www.google.com')"><div class="icon-box" style="background:#fff; color:#4285F4;">G</div><span>Browser</span></div>
-            <div class="app" onclick="openApp('https://m.youtube.com')"><div class="icon-box" style="background:#f00; color:#fff;">YT</div><span>YouTube</span></div>
-            <div class="app" onclick="openApp('https://m.tiktok.com')"><div class="icon-box" style="background:#000; color:#fff;">TK</div><span>TikTok</span></div>
-            <div class="app" onclick="openOverlay('store-win')"><div class="icon-box" style="background:#34A853; color:#fff;">🛒</div><span>Store</span></div>
-            <div class="app" onclick="openOverlay('info-win')"><div class="icon-box" style="background:var(--accent); color:#000;">i</div><span>Info OS</span></div>
+        <div class="app-grid">
+            <div class="app" onclick="openW('https://m.youtube.com')"><div class="icon" style="background:red;color:white">YT</div><span>YouTube</span></div>
+            <div class="app" onclick="openW('https://m.tiktok.com')"><div class="icon" style="background:black;color:white">TK</div><span>TikTok</span></div>
+            <div class="app" onclick="document.getElementById('injector').style.display='block'"><div class="icon" style="background:#444;color:white">UP</div><span>Update Code</span></div>
+            <div class="app" onclick="toggleZrak()"><div class="icon" style="background:white;color:black">🤖</div><span>ZRAK AI</span></div>
+            <div class="app" onclick="openW('https://www.google.com')"><div class="icon" style="background:blue;color:white">G</div><span>Google</span></div>
         </div>
     </div>
 
-    <div id="info-win" class="overlay">
-        <h1>QWES TV.id - System Info</h1>
-        <hr>
-        <p>Version: 11.0 Supreme</p>
-        <p>Engine: Ultra Omega Final</p>
-        <p>Status: All Systems Nominal</p>
-        <p>Features: Auto-Full Screen, No-Noise, HD Icons</p>
-        <button class="close-btn" onclick="closeOverlay('info-win')">TUTUP INFO</button>
+    <div id="injector">
+        <h2>QWES CODE INJECTOR</h2>
+        <p>Tempelkan kode HTML baru di bawah ini untuk update:</p>
+        <textarea id="new-code" placeholder="Paste kode HTML di sini..."></textarea>
+        <br><br>
+        <button onclick="saveUpdate()" style="padding:15px 40px; background:var(--green); border:none; cursor:pointer;">SIMPAN & KIRIM NOTIF</button>
+        <button onclick="this.parentElement.style.display='none'" style="padding:15px 40px; background:var(--red); border:none; cursor:pointer;">BATAL</button>
     </div>
 
-    <div id="store-win" class="overlay">
-        <h1>QWES APP STORE</h1>
-        <p>Klik aplikasi untuk memasang ke Home Screen:</p>
-        <div id="app-container">
-            <div class="app" onclick="installApp('Netflix', 'https://www.netflix.com', '#E50914', 'N')"><div class="icon-box" style="background:#E50914;">N</div><span>Netflix</span></div>
-            <div class="app" onclick="installApp('Facebook', 'https://m.facebook.com', '#1877F2', 'F')"><div class="icon-box" style="background:#1877F2;">F</div><span>Facebook</span></div>
-        </div>
-        <button class="close-btn" onclick="closeOverlay('store-win')">KEMBALI</button>
-    </div>
-
-    <div id="web-ui">
-        <iframe id="frame" src=""></iframe>
-        <button class="close-btn" onclick="closeApp()">EXIT APP</button>
+    <div id="web-ui" style="position:fixed;inset:0;background:#fff;z-index:900000;display:none;">
+        <iframe id="frame" style="width:100%;height:100%;border:none;"></iframe>
+        <button onclick="closeW()" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:15px 40px;background:red;color:white;border:none;border-radius:50px;font-weight:bold;">EXIT</button>
     </div>
 
     <script>
-        function initSystem() {
-            // Auto Full Screen Force
-            document.addEventListener('click', function() {
-                const el = document.documentElement;
-                if(el.requestFullscreen) el.requestFullscreen();
-            }, {once: true});
-
+        function checkFirstRun() {
+            setInterval(updateClock, 1000);
+            // LISTEN TO CENTER COMMANDS (via LocalStorage Bridge)
             setInterval(() => {
-                const d = new Date();
-                document.getElementById('big-clock').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-            }, 1000);
+                let cmd = localStorage.getItem('QWES_SIGNAL');
+                document.getElementById('no-signal').style.display = (cmd === 'OFF') ? 'block' : 'none';
+            }, 500);
         }
 
-        function openApp(url) {
-            document.getElementById('frame').src = url;
-            document.getElementById('web-ui').style.display = 'block';
+        function goFull() {
+            let el = document.documentElement;
+            if(el.requestFullscreen) el.requestFullscreen();
+            document.getElementById('wake-layer').style.display = 'none';
+            updateClock();
         }
 
-        function closeApp() {
-            document.getElementById('web-ui').style.display = 'none';
-            document.getElementById('frame').src = '';
+        function updateClock() {
+            let d = new Date();
+            document.getElementById('big-clock').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
         }
 
-        function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
-        function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
+        function openW(u) { document.getElementById('frame').src = u; document.getElementById('web-ui').style.display = 'block'; }
+        function closeW() { document.getElementById('web-ui').style.display = 'none'; document.getElementById('frame').src = ''; }
 
-        function installApp(name, url, color, initial) {
-            const container = document.getElementById('app-container');
-            const newApp = document.createElement('div');
-            newApp.className = 'app';
-            newApp.onclick = () => openApp(url);
-            newApp.innerHTML = `<div class="icon-box" style="background:${color}; color:#fff;">${initial}</div><span>${name}</span>`;
-            container.appendChild(newApp);
-            alert(name + " ditambahkan ke Home Screen!");
-            closeOverlay('store-win');
+        // LOGIC UPDATE (Hapus Code Lama, Ganti Baru)
+        function saveUpdate() {
+            let code = document.getElementById('new-code').value;
+            if(code) {
+                localStorage.setItem('NEXT_UPDATE', code);
+                document.getElementById('injector').style.display = 'none';
+                document.getElementById('update-notif').classList.add('show');
+            }
         }
+
+        function rebootSystem() {
+            document.getElementById('boot').style.display = 'flex';
+            setTimeout(() => {
+                let newCode = localStorage.getItem('NEXT_UPDATE');
+                document.open();
+                document.write(newCode);
+                document.close();
+            }, 3000);
+        }
+
+        function toggleZrak() { alert("ZRAK AI: Mesin v12 Online. Bridge HTML siap menerima kode!"); }
     </script>
 </body>
 </html>
