@@ -2,208 +2,201 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIZET OS v4.9 ULTRA</title>
+    <title>BIZET OS v5.0 PLATINUM</title>
     <style>
-        :root { --ios-blue: #007aff; --bizet-red: #ff3b30; }
-        
-        /* SCREEN BRIGHTNESS OVERLAY */
-        #brightness-overlay {
-            position: fixed; inset: 0; background: black;
-            opacity: 0; pointer-events: none; z-index: 999999;
+        :root { 
+            --ios-blue: #007aff; 
+            --bizet-red: #ff3b30;
+            --wall-1: url('https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1920'); /* Galaxy */
+            --wall-2: url('https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=1920'); /* Mountain */
+            --wall-3: url('https://images.unsplash.com/photo-1449156001533-cb39c650a316?q=80&w=1920'); /* City Rain */
         }
-
+        
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #000; overflow: hidden; color: white;
+            font-family: 'Segoe UI', sans-serif; background: #000; overflow: hidden; color: white;
         }
 
+        /* BRIGHTNESS OVERLAY */
+        #brightness-overlay { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 999999; }
+
+        /* WALLPAPER ENGINE */
         #wallpaper {
             position: fixed; inset: 0; z-index: -1;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
-                        url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=1920&auto=format&fit=crop');
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), var(--wall-1);
             background-size: cover; background-position: center;
-            transition: transform 2s ease;
+            transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1.1);
         }
 
-        /* DYNAMIC ISLAND */
-        #island {
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-            min-width: 160px; height: 38px; background: #000; border-radius: 20px;
-            z-index: 50000; display: flex; align-items: center; justify-content: center;
-            padding: 0 25px; border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.6s cubic-bezier(0.1, 0.9, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        /* BOOTING LUXURY */
+        #boot { 
+            position: fixed; inset: 0; background: #000; z-index: 90000; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            transition: 2s ease;
         }
-        #island.active { width: 450px; height: 80px; background: #0a0a0a; }
+        .boot-text { font-size: 3rem; letter-spacing: 15px; font-weight: 100; color: white; text-shadow: 0 0 20px #fff; opacity: 0; animation: fadeInOut 4s forwards; }
+        .loader { width: 200px; height: 2px; background: #222; margin-top: 20px; position: relative; overflow: hidden; }
+        .loader::after { content: ''; position: absolute; left: -100%; width: 100%; height: 100%; background: var(--bizet-red); animation: loading 3s forwards; }
+        
+        @keyframes fadeInOut { 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes loading { to { left: 0; } }
 
-        /* BOOTING ANIMATION */
-        #boot {
-            position: fixed; inset: 0; background: #000; z-index: 90000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1s ease;
+        /* DYNAMIC HUB (RIGHT) */
+        #notif-hub {
+            position: fixed; top: 15px; right: 20px;
+            width: 45px; height: 45px; background: rgba(0,0,0,0.7); border-radius: 20px;
+            z-index: 50001; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2); cursor: pointer; backdrop-filter: blur(10px);
+            transition: 0.6s cubic-bezier(0.1, 0.9, 0.2, 1);
         }
-        .logo-anim {
-            font-size: 4rem; letter-spacing: 20px; font-weight: 100;
-            animation: pulse 2s infinite ease-in-out;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } }
+        #notif-hub.active { width: 320px; height: 450px; border-radius: 25px; align-items: flex-start; padding: 20px; }
+        #notif-content { display: none; width: 100%; }
+        #notif-hub.active #notif-content { display: block; }
 
-        /* HOME SCREEN */
-        #home { height: 100vh; display: flex; flex-direction: column; align-items: center; opacity: 0; transition: 1.5s ease; }
+        /* APP GRID */
+        #home { height: 100vh; display: flex; flex-direction: column; align-items: center; opacity: 0; transition: 2s; }
         .app-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-top: 180px; width: 85%; }
         
-        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; width: 120px; text-align: center; }
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; width: 110px; }
         .icon {
-            width: 90px; height: 90px; border-radius: 24px; background: #fff;
-            display: flex; justify-content: center; align-items: center;
-            margin-bottom: 12px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90px; height: 90px; border-radius: 24px; background: #fff; color: #333;
+            display: flex; justify-content: center; align-items: center; font-size: 2.2rem; font-weight: bold;
+            margin-bottom: 12px; transition: 0.4s; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
-        .app-item:hover .icon { transform: scale(1.1); box-shadow: 0 0 30px var(--ios-blue); }
+        .app-item:hover .icon { transform: scale(1.1) translateY(-10px); }
 
-        /* NO SIGNAL 21:53 */
-        #no-signal {
-            position: fixed; inset: 0; background: #000; z-index: 1000000;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            background-image: url('https://media.giphy.com/media/oEI9uWUicG58Y/giphy.gif'); /* Static effect */
-            background-size: cover;
-        }
+        .del-badge { position: absolute; top: -5px; left: -5px; width: 30px; height: 30px; background: red; color: white; border-radius: 50%; display: none; justify-content: center; align-items: center; font-weight: bold; z-index: 10; }
+        .editing .del-badge { display: flex; }
+        .editing { animation: jiggle 0.3s infinite; }
 
-        /* SETTINGS SLIDER */
-        .slider-container { margin: 20px 0; padding: 10px; background: #eee; border-radius: 10px; }
-        input[type=range] { width: 100%; cursor: pointer; }
-
-        .panel {
-            position: fixed; top: 100%; left: 0; width: 100%; height: 100%;
-            background: #f2f2f7; color: #000; z-index: 10000; transition: 0.6s cubic-bezier(0.1, 0.8, 0.2, 1);
-        }
+        /* PANELS */
+        .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 100%; background: #f2f2f7; color: #000; z-index: 10000; transition: 0.7s cubic-bezier(0.1, 0.8, 0.2, 1); }
         .panel.active { top: 0; }
-        iframe { width: 100%; height: 100%; border: none; }
+        
+        #no-signal { position: fixed; inset: 0; background: #000; z-index: 1000000; display: none; flex-direction: column; justify-content: center; align-items: center; background-image: url('https://media.giphy.com/media/oEI9uWUicG58Y/giphy.gif'); background-size: cover; }
+
+        @keyframes jiggle { 0% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } 100% { transform: rotate(-1.5deg); } }
     </style>
 </head>
-<body onclick="autoFullScreen()">
+<body onload="startOS()">
 
     <div id="brightness-overlay"></div>
     <audio id="snd" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
 
     <div id="no-signal">
-        <h1 style="background:white; color:black; padding:10px 50px;">NO SIGNAL</h1>
-        <p style="color:white; text-shadow: 2px 2px #000;">BIZET OS AUTO-LOCK: 21:53</p>
+        <h1 style="background:white; color:black; padding:15px 60px; font-size: 3rem;">NO SIGNAL</h1>
+    </div>
+
+    <div id="notif-hub" onclick="this.classList.toggle('active')">
+        <div id="notif-content">
+            <h2 style="margin:0 0 15px 0;">Notifications</h2>
+            <div id="log-list" style="font-size: 0.9rem; color:#aaa; line-height: 1.6;">
+                <div>- BIZET Kernel Loaded</div>
+            </div>
+        </div>
+        <span id="bell">🔔</span>
     </div>
 
     <div id="boot">
-        <div class="logo-anim">BIZET</div>
-        <p style="color:#555; letter-spacing:5px; margin-top:20px;">v4.9 ULTRA TV</p>
-        <p style="color:var(--bizet-red); margin-top:50px; font-size:0.8rem;">TAP ANYWHERE TO START</p>
+        <div class="boot-text">BIZET OS</div>
+        <div class="loader"></div>
     </div>
 
-    <div id="island"><div id="clock">00:00</div></div>
-
     <div id="wallpaper"></div>
-
     <div id="home">
         <div class="app-grid" id="main-grid">
             <div class="app-item" onclick="openWeb('https://www.google.com')">
-                <div class="icon"><img src="https://www.google.com/favicon.ico" width="45"></div>
+                <div class="icon" style="background:white;"><img src="https://www.google.com/favicon.ico" width="45"></div>
                 <span>Google</span>
             </div>
             <div class="app-item" onclick="openPanel('store-panel')">
-                <div class="icon" style="background: linear-gradient(#4cd964, #28a745); color:white; font-size:2.5rem;">📥</div>
+                <div class="icon" style="background:linear-gradient(#4cd964, #28a745); color:white;">📥</div>
                 <span>App Store</span>
             </div>
             <div class="app-item" onclick="openPanel('settings-panel')">
-                <div class="icon" style="background: #8e8e93; color:white; font-size:2.5rem;">⚙️</div>
+                <div class="icon" style="background:#8e8e93; color:white;">⚙️</div>
                 <span>Settings</span>
             </div>
-            <div class="app-item" onclick="toggleEdit()">
-                <div class="icon" style="background: #222; color:white; font-size:2rem;">🛠️</div>
-                <span id="edit-label">Atur</span>
+            <div class="app-item" id="edit-btn" onclick="toggleEdit()">
+                <div class="icon" style="background:#222; color:white;">🛠️</div>
+                <span id="edit-label">Atur App</span>
             </div>
         </div>
     </div>
 
     <div id="settings-panel" class="panel">
         <div style="padding:80px 40px;">
-            <h1>Settings</h1>
-            <div style="background:white; border-radius:20px; padding:20px; margin-top:20px;">
-                <label style="font-weight:bold;">Kecerahan Layar (Brightness)</label>
-                <div class="slider-container">
-                    <input type="range" min="0" max="0.8" step="0.1" value="0" oninput="changeBrightness(this.value)">
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                    <span>Virtual RAM</span> <b>12.0 GB</b>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                    <span>Versi</span> <b>BIZET OS 4.9 PRO</b>
+            <h1>TV Settings</h1>
+            <div style="background:white; border-radius:25px; padding:30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <label style="font-weight:bold;">Kecerahan Layar</label>
+                <input type="range" min="0" max="0.8" step="0.1" value="0" style="width:100%; margin:20px 0;" oninput="document.getElementById('brightness-overlay').style.opacity = this.value">
+                
+                <h3 style="margin-top:30px;">Ganti Wallpaper HD</h3>
+                <div style="display:flex; gap:15px;">
+                    <div onclick="setWall('wall-1')" style="width:100px; height:60px; background:var(--wall-1); background-size:cover; border-radius:12px; border:2px solid #ddd; cursor:pointer;"></div>
+                    <div onclick="setWall('wall-2')" style="width:100px; height:60px; background:var(--wall-2); background-size:cover; border-radius:12px; border:2px solid #ddd; cursor:pointer;"></div>
+                    <div onclick="setWall('wall-3')" style="width:100px; height:60px; background:var(--wall-3); background-size:cover; border-radius:12px; border:2px solid #ddd; cursor:pointer;"></div>
                 </div>
             </div>
-            <button onclick="closePanel('settings-panel')" style="margin-top:30px; padding:20px 60px; border-radius:15px; background:#000; color:#fff; border:none; width:100%; font-weight:bold;">TUTUP</button>
+            <button onclick="closePanel('settings-panel')" style="width:100%; padding:20px; background:#000; color:#fff; border-radius:20px; border:none; margin-top:30px; font-weight:bold; cursor:pointer;">KEMBALI KE HOME</button>
         </div>
     </div>
 
     <div id="store-panel" class="panel">
         <div style="padding:80px 40px;">
-            <h1>Web App Store</h1>
-            <input type="text" id="app-n" placeholder="Nama Aplikasi" style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc;">
-            <input type="text" id="app-u" placeholder="https://..." style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc;">
-            <button onclick="addApp()" style="width:100%; padding:20px; background:var(--ios-blue); color:#fff; border:none; border-radius:15px; font-weight:bold;">INSTAL SEKARANG</button>
-            <button onclick="closePanel('store-panel')" style="width:100%; padding:20px; background:#ddd; border:none; border-radius:15px; margin-top:15px;">BATAL</button>
+            <h1>Web Store</h1>
+            <input type="text" id="app-n" placeholder="Nama Aplikasi" style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ddd;">
+            <input type="text" id="app-u" placeholder="URL: https://..." style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ddd;">
+            <button onclick="addApp()" style="width:100%; padding:20px; background:var(--ios-blue); color:#fff; border:none; border-radius:15px; font-weight:bold;">INSTAL APLIKASI</button>
+            <button onclick="closePanel('store-panel')" style="width:100%; padding:20px; background:none; color:#555; border:none; margin-top:10px;">BATAL</button>
         </div>
     </div>
 
     <div id="web-layer" style="position:fixed; inset:0; background:#000; z-index:9000; display:none;">
-        <button onclick="closeWeb()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:15px 50px; border-radius:50px; border:none; background:#fff; font-weight:bold; z-index:9001;">HOME</button>
-        <iframe id="view"></iframe>
+        <button onclick="closeWeb()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:18px 60px; border-radius:50px; border:none; background:#fff; font-weight:bold; box-shadow:0 10px 30px rgba(0,0,0,0.5);">CLOSE WEB</button>
+        <iframe id="view" src=""></iframe>
     </div>
 
     <script>
         let isEdit = false;
 
-        function autoFullScreen() {
-            // Hilangkan booting
-            const boot = document.getElementById('boot');
-            if(boot.style.display !== 'none') {
-                const doc = document.documentElement;
-                if (doc.requestFullscreen) doc.requestFullscreen();
-                else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-                
-                boot.style.opacity = '0';
+        function startOS() {
+            // Animasi Booting ke Home
+            setTimeout(() => {
+                document.getElementById('boot').style.opacity = '0';
                 setTimeout(() => {
-                    boot.style.display = 'none';
+                    document.getElementById('boot').style.display = 'none';
                     document.getElementById('home').style.opacity = '1';
-                    document.getElementById('wallpaper').style.transform = 'scale(1.1)';
-                }, 1000);
-            }
+                    document.getElementById('wallpaper').style.transform = 'scale(1)';
+                    // Mencoba Auto Fullscreen
+                    document.documentElement.requestFullscreen().catch(() => {
+                        console.log("Klik manual diperlukan untuk fullscreen di browser ini.");
+                    });
+                }, 1500);
+            }, 4000);
+            
+            setInterval(checkLock, 1000);
         }
 
-        function clock() {
+        function checkLock() {
             const d = new Date();
-            const h = d.getHours();
-            const m = d.getMinutes();
-            document.getElementById('clock').innerText = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0');
-
-            if (h === 21 && m === 53) {
+            if (d.getHours() === 21 && d.getMinutes() === 53) {
                 document.getElementById('no-signal').style.display = 'flex';
             }
         }
-        setInterval(clock, 1000); clock();
 
-        function changeBrightness(val) {
-            document.getElementById('brightness-overlay').style.opacity = val;
+        function setWall(wallVar) {
+            document.getElementById('wallpaper').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), var(--${wallVar})`;
+            addLog("Wallpaper Updated");
         }
 
-        function openPanel(id) { document.getElementById(id).classList.add('active'); }
-        function closePanel(id) { document.getElementById(id).classList.remove('active'); }
-
-        function openWeb(u) {
-            document.getElementById('view').src = u;
-            document.getElementById('web-layer').style.display = 'block';
-        }
-        function closeWeb() {
-            document.getElementById('web-layer').style.display = 'none';
-            document.getElementById('view').src = '';
+        function addLog(msg) {
+            const log = document.getElementById('log-list');
+            const div = document.createElement('div');
+            div.innerText = "- " + msg;
+            log.prepend(div);
+            document.getElementById('snd').play();
         }
 
         function addApp() {
@@ -214,36 +207,23 @@
             const div = document.createElement('div');
             div.className = 'app-item';
             div.onclick = () => openWeb(u);
-            div.innerHTML = `<div class="icon" style="background:#eee; font-weight:bold; color:#333;">${n[0].toUpperCase()}</div><span>${n}</span>`;
-            grid.appendChild(div);
-            notif("INSTALLED: " + n.toUpperCase());
+            div.innerHTML = `<div class="del-badge" onclick="deleteApp(event, this)">-</div><div class="icon">${n[0].toUpperCase()}</div><span>${n}</span>`;
+            grid.insertBefore(div, document.getElementById('edit-btn'));
+            addLog("App Installed: " + n);
             closePanel('store-panel');
         }
 
         function toggleEdit() {
             isEdit = !isEdit;
-            document.querySelectorAll('.app-item').forEach(a => {
-                a.style.animation = isEdit ? "jiggle 0.3s infinite" : "none";
-            });
-            document.getElementById('edit-label').innerText = isEdit ? "Selesai" : "Atur";
+            document.querySelectorAll('.app-item').forEach(a => { if(a.id !== 'edit-btn') a.classList.toggle('editing', isEdit); });
+            document.getElementById('edit-label').innerText = isEdit ? "Selesai" : "Atur App";
         }
 
-        function notif(t) {
-            document.getElementById('snd').play();
-            const i = document.getElementById('island');
-            const c = document.getElementById('clock');
-            i.classList.add('active');
-            c.innerText = t;
-            setTimeout(() => { i.classList.remove('active'); setTimeout(clock, 600); }, 3000);
-        }
+        function deleteApp(e, el) { e.stopPropagation(); el.parentElement.remove(); addLog("App Deleted"); }
+        function openPanel(id) { document.getElementById(id).classList.add('active'); }
+        function closePanel(id) { document.getElementById(id).classList.remove('active'); }
+        function openWeb(u) { document.getElementById('view').src = u; document.getElementById('web-layer').style.display = 'block'; }
+        function closeWeb() { document.getElementById('web-layer').style.display = 'none'; document.getElementById('view').src = ''; }
     </script>
-
-    <style>
-        @keyframes jiggle {
-            0% { transform: rotate(-1deg); }
-            50% { transform: rotate(1.5deg); }
-            100% { transform: rotate(-1deg); }
-        }
-    </style>
 </body>
 </html>
