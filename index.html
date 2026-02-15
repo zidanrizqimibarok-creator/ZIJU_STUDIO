@@ -2,237 +2,203 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>BIZET OS v5.3 PLATINUM</title>
+    <title>BIZET OS v5.4 FINAL</title>
     <style>
-        :root { --blue: #007aff; --red: #ff3b30; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background: #000; overflow: hidden; color: white; }
+        :root { --blue: #007aff; --red: #ff3b30; --glass: rgba(0,0,0,0.7); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Segoe UI', sans-serif; background: #000; overflow: hidden; color: white; }
         
         #br-mask { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 1000000; }
 
-        /* WALLPAPER DARI LINK BOS */
+        /* WALLPAPER DENGAN FALLBACK */
         #wallpaper {
             position: fixed; inset: 0; z-index: -1;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
-                        url('https://image2url.com/r2/default/images/1771125151385-84b3701e-4544-4e6f-85a9-44a1809b4337.jpg');
+            background-color: #1a1a2e; /* Warna dasar jika gambar gagal */
+            background-image: url('https://image2url.com/r2/default/images/1771125151385-84b3701e-4544-4e6f-85a9-44a1809b4337.jpg');
             background-size: cover; background-position: center;
+            transition: 1s;
         }
 
-        /* DYNAMIC ISLAND KIRI (JAM & TANGGAL LENGKAP) */
-        #island-left {
-            position: fixed; top: 15px; left: 20px;
-            min-width: 220px; height: 45px; background: rgba(0,0,0,0.8);
-            border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
-            display: flex; align-items: center; justify-content: center;
-            padding: 0 20px; z-index: 50000; backdrop-filter: blur(10px);
-        }
+        /* DYNAMIC ISLANDS */
+        .island { position: fixed; top: 15px; background: var(--glass); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 50000; display: flex; align-items: center; justify-content: center; }
+        #isl-left { left: 20px; padding: 0 20px; height: 40px; font-weight: bold; font-size: 0.9rem; }
+        #isl-right { right: 20px; width: 40px; height: 40px; cursor: pointer; transition: 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); overflow: hidden; }
+        #isl-right.active { width: 280px; height: 350px; padding: 20px; flex-direction: column; align-items: flex-start; }
 
-        /* DYNAMIC ISLAND KANAN (NOTIF HUB) */
-        #island-right {
-            position: fixed; top: 15px; right: 20px;
-            width: 45px; height: 45px; background: rgba(0,0,0,0.8);
-            border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 50001; backdrop-filter: blur(10px); cursor: pointer;
-            transition: 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); overflow: hidden;
-        }
-        #island-right.active { width: 300px; height: 400px; align-items: flex-start; padding: 20px; flex-direction: column; }
+        /* NEW BOOTING STYLE */
+        #boot { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #boot-info { margin-top: 20px; font-family: monospace; color: #0f0; font-size: 0.8rem; text-align: center; }
 
-        /* BOOTING */
-        #boot { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 1s; }
-        .loader-line { width: 200px; height: 2px; background: #333; margin-top: 20px; position: relative; }
-        .loader-line div { position: absolute; height: 100%; background: var(--red); width: 0; animation: load 3s forwards; }
-        @keyframes load { to { width: 100%; } }
+        /* HOME GRID */
+        #home { height: 100vh; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 35px; opacity: 0; transition: 1s; padding-top: 50px; }
+        .app { display: flex; flex-direction: column; align-items: center; width: 110px; cursor: pointer; position: relative; transition: 0.3s; }
+        .app:hover { transform: scale(1.1); }
+        .icon-box { width: 85px; height: 85px; border-radius: 20px; background: #fff; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .app span { font-size: 13px; font-weight: bold; text-shadow: 1px 1px 3px #000; }
+        svg { width: 45px; height: 45px; fill: #333; }
 
-        /* APP GRID */
-        #home { height: 100vh; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 40px; opacity: 0; transition: 1.5s; }
-        .app { display: flex; flex-direction: column; align-items: center; width: 120px; cursor: pointer; position: relative; }
-        .icon-box { width: 95px; height: 95px; border-radius: 24px; background: #fff; display: flex; justify-content: center; align-items: center; margin-bottom: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); transition: 0.3s; }
-        .app:hover .icon-box { transform: translateY(-10px); }
-        .app span { font-weight: bold; font-size: 14px; text-shadow: 2px 2px 4px #000; }
+        /* STORE LIST */
+        .store-item { background: white; color: black; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-add { background: var(--blue); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
 
-        /* SVG ICONS (ANTI KOTAK-KOTAK) */
-        svg { width: 55px; height: 55px; fill: #333; }
-
-        /* PANEL */
-        .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 100%; background: #f2f2f7; color: #000; z-index: 10000; transition: 0.6s cubic-bezier(0.1, 0.8, 0.2, 1); padding: 60px 40px; box-sizing: border-box; }
+        /* PANELS */
+        .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 100%; background: #f2f2f7; color: #000; z-index: 10000; transition: 0.5s; padding: 40px; box-sizing: border-box; overflow-y: auto; }
         .panel.active { top: 0; }
 
-        #no-signal { position: fixed; inset: 0; background: #000; z-index: 2000000; display: none; justify-content: center; align-items: center; background-image: url('https://media.giphy.com/media/oEI9uWUicG58Y/giphy.gif'); background-size: cover; }
-
-        .del-x { position: absolute; top: -8px; left: -8px; width: 30px; height: 30px; background: red; color: white; border-radius: 50%; display: none; justify-content: center; align-items: center; font-weight: bold; }
+        #shutdown { position: fixed; inset: 0; background: #000; z-index: 2000000; display: none; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; }
+        .del-x { position: absolute; top: -5px; left: -5px; width: 25px; height: 25px; background: red; color: white; border-radius: 50%; display: none; justify-content: center; align-items: center; font-size: 12px; z-index: 5; }
+        .editing { animation: jiggle 0.3s infinite; }
         .editing .del-x { display: flex; }
-        .editing { animation: shake 0.3s infinite; }
-        @keyframes shake { 0% {transform:rotate(-1.5deg)} 50% {transform:rotate(1.5deg)} }
+        @keyframes jiggle { 0% {transform: rotate(-1deg)} 50% {transform: rotate(1.1deg)} }
     </style>
 </head>
-<body onload="startBIZET()">
+<body onload="bootFinal()">
 
     <div id="br-mask"></div>
-    <audio id="snd" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <audio id="beep" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
 
-    <div id="no-signal">
-        <h1 style="background:white; color:black; padding:10px 50px; font-size:3rem;">NO SIGNAL</h1>
+    <div id="shutdown">
+        <h1 style="color:var(--red); font-size: 3rem;">SYSTEM HALTED</h1>
+        <p>TIME LIMIT REACHED: 10:20</p>
     </div>
 
-    <div id="island-left">
-        <div id="full-date" style="font-size: 0.9rem; font-weight: bold; letter-spacing: 1px;">Memuat...</div>
-    </div>
+    <div id="isl-left" class="island">Memuat Waktu...</div>
 
-    <div id="island-right" onclick="this.classList.toggle('active')">
-        <div id="notif-box" style="display:none; width:100%;">
-            <h3 style="margin:0 0 10px 0; border-bottom:1px solid #444;">Notifikasi</h3>
-            <div id="logs" style="font-size: 0.8rem; color:#ccc;">- Sistem BIZET v5.3 Siap</div>
+    <div id="isl-right" class="island" onclick="this.classList.toggle('active')">
+        <div id="notif-content" style="display:none; width:100%;">
+            <h3 style="margin-top:0;">Notifikasi</h3>
+            <div id="logs" style="font-size:0.8rem; color:#aaa;">- BIZET v5.4 Started</div>
         </div>
-        <span id="bell-icon">🔔</span>
+        <span id="bell">🔔</span>
     </div>
 
     <div id="boot">
-        <h1 style="letter-spacing:15px; font-weight:100; text-shadow: 0 0 20px #fff;">BIZET OS</h1>
-        <div class="loader-line"><div></div></div>
+        <h1 style="letter-spacing:10px; margin:0;">BIZET OS</h1>
+        <div id="boot-info">
+            INITIALIZING KERNEL...<br>
+            LOADING TV INTERFACE...<br>
+            CHECKING RAM... [12.0 GB OK]
+        </div>
     </div>
 
     <div id="wallpaper"></div>
 
     <div id="home">
-        <div class="app" onclick="openW('https://www.google.com')">
-            <div class="icon-box">
-                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-            </div>
+        <div class="app" onclick="openWeb('https://www.google.com')">
+            <div class="icon-box"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
             <span>Google</span>
         </div>
-
         <div class="app" onclick="openP('store-p')">
-            <div class="icon-box" style="background: #4cd964;">
-                <svg viewBox="0 0 24 24" style="fill:white;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-            </div>
-            <span>Store</span>
+            <div class="icon-box" style="background:#4cd964;"><svg viewBox="0 0 24 24" style="fill:white;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></div>
+            <span>App Store</span>
         </div>
-
         <div class="app" onclick="openP('set-p')">
-            <div class="icon-box" style="background: #8e8e93;">
-                <svg viewBox="0 0 24 24" style="fill:white;"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-            </div>
+            <div class="icon-box" style="background:#8e8e93;"><svg viewBox="0 0 24 24" style="fill:white;"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
             <span>Settings</span>
         </div>
-
         <div class="app" id="edit-btn" onclick="toggleEdit()">
-            <div class="icon-box" style="background: #333;">
-                <svg viewBox="0 0 24 24" style="fill:white;"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.5 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
-            </div>
-            <span id="et-txt">Atur</span>
+            <div class="icon-box" style="background:#222;"><svg viewBox="0 0 24 24" style="fill:white;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></div>
+            <span id="edit-txt">Atur</span>
         </div>
-    </div>
-
-    <div id="set-p" class="panel">
-        <h2>Sistem & RAM</h2>
-        <div style="background:white; padding:20px; border-radius:20px;">
-            <p><b>Virtual RAM:</b> <span id="ram-val">12.0</span> GB FREE</p>
-            <p><b>Kecerahan:</b></p>
-            <input type="range" min="0" max="0.8" step="0.1" value="0" style="width:100%" oninput="document.getElementById('br-mask').style.opacity = this.value">
-            <p style="color:gray; font-size:12px;">OS Version: BIZET v5.3 Platinum</p>
-        </div>
-        <button onclick="closeP('set-p')" style="width:100%; padding:20px; background:black; color:white; border-radius:15px; margin-top:20px; font-weight:bold;">KEMBALI</button>
     </div>
 
     <div id="store-p" class="panel">
-        <h2>Pasang Aplikasi</h2>
-        <input type="text" id="an" placeholder="Nama App" style="width:100%; padding:15px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
-        <input type="text" id="au" placeholder="https://..." style="width:100%; padding:15px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
-        <button onclick="addApp()" style="width:100%; padding:20px; background:var(--blue); color:white; border-radius:10px; border:none; font-weight:bold;">INSTAL</button>
-        <button onclick="closeP('store-p')" style="width:100%; padding:10px; border:none; background:none;">BATAL</button>
+        <h2 style="margin-top:0;">BIZET WEB STORE</h2>
+        <div id="store-list">
+            <div class="store-item"><span>📺 YouTube</span> <button class="btn-add" onclick="addExt('YouTube','https://m.youtube.com')">Pasang</button></div>
+            <div class="store-item"><span>🎬 Netflix</span> <button class="btn-add" onclick="addExt('Netflix','https://www.netflix.com')">Pasang</button></div>
+            <div class="store-item"><span>🎵 TikTok</span> <button class="btn-add" onclick="addExt('TikTok','https://www.tiktok.com')">Pasang</button></div>
+            <div class="store-item"><span>💬 Facebook</span> <button class="btn-add" onclick="addExt('Facebook','https://m.facebook.com')">Pasang</button></div>
+        </div>
+        <div style="margin-top:20px; border-top:1px solid #ccc; padding-top:10px;">
+            <p>Tambah Custom Link:</p>
+            <input type="text" id="an" placeholder="Nama App" style="width:100%; padding:10px; margin-bottom:10px;">
+            <input type="text" id="au" placeholder="https://..." style="width:100%; padding:10px; margin-bottom:10px;">
+            <button class="btn-add" style="width:100%;" onclick="addExt(document.getElementById('an').value, document.getElementById('au').value)">Pasang Custom</button>
+        </div>
+        <button onclick="closeP('store-p')" style="width:100%; margin-top:15px; padding:15px; border:none; background:#ccc;">Tutup</button>
     </div>
 
-    <div id="web-ui" style="position:fixed; inset:0; background:white; z-index:8000; display:none;">
+    <div id="set-p" class="panel">
+        <h2 style="margin-top:0;">System Control</h2>
+        <div style="background:white; padding:20px; border-radius:15px;">
+            <p><b>RAM Virtual:</b> <span id="rv">12.0</span> GB FREE</p>
+            <p><b>Kecerahan Layar:</b></p>
+            <input type="range" min="0" max="0.8" step="0.1" value="0" style="width:100%" oninput="document.getElementById('br-mask').style.opacity = this.value">
+            <p><b>Versi:</b> BIZET OS v5.4 [Polytron Optimised]</p>
+        </div>
+        <button onclick="closeP('set-p')" style="width:100%; padding:20px; background:black; color:white; border-radius:15px; margin-top:20px;">KEMBALI</button>
+    </div>
+
+    <div id="web-ui" style="position:fixed; inset:0; background:white; z-index:9000; display:none;">
         <iframe id="view" src="" style="width:100%; height:100%; border:none;"></iframe>
-        <button onclick="closeW()" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); padding:15px 50px; background:red; color:white; border-radius:50px; font-weight:bold; border:none; z-index:8001;">HOME</button>
+        <button onclick="closeWeb()" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:15px 40px; background:red; color:white; border-radius:50px; font-weight:bold; border:none; z-index:9001;">TUTUP</button>
     </div>
 
     <script>
         let isEdit = false; let ram = 12.0;
 
-        function startBIZET() {
-            // Jam & Tanggal Update
-            setInterval(updateClock, 1000);
-            updateClock();
-
-            // Booting Animasi
+        function bootFinal() {
             setTimeout(() => {
                 document.getElementById('boot').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('boot').style.display = 'none';
                     document.getElementById('home').style.opacity = '1';
-                    // Auto Fullscreen
-                    document.documentElement.requestFullscreen().catch(() => {});
+                    try { document.documentElement.requestFullscreen(); } catch(e){}
                 }, 1000);
-            }, 3500);
-
-            // No Signal Check
-            setInterval(() => {
-                const d = new Date();
-                if(d.getHours() === 21 && d.getMinutes() === 53) document.getElementById('no-signal').style.display = 'flex';
-            }, 1000);
+            }, 4000);
+            setInterval(updateClock, 1000);
         }
 
         function updateClock() {
             const d = new Date();
-            const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
-            const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+            const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+            const h = d.getHours(); const m = d.getMinutes();
             
-            const time = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-            const dateStr = days[d.getDay()] + ", " + d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+            // SHUTDOWN AT 10:20
+            if(h === 10 && m === 20) { document.getElementById('shutdown').style.display = 'flex'; }
+
+            document.getElementById('isl-left').innerText = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0') + " | " + d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
             
-            document.getElementById('full-date').innerText = time + " | " + dateStr;
-            
-            // Toggle Notif Content
-            const rh = document.getElementById('island-right');
-            const nb = document.getElementById('notif-box');
-            const bi = document.getElementById('bell-icon');
-            if(rh.classList.contains('active')) { nb.style.display = 'block'; bi.style.display = 'none'; }
-            else { nb.style.display = 'none'; bi.style.display = 'block'; }
+            // Update Notif Hub
+            const rh = document.getElementById('isl-right');
+            const nc = document.getElementById('notif-content');
+            const bi = document.getElementById('bell');
+            if(rh.classList.contains('active')) { nc.style.display='block'; bi.style.display='none'; }
+            else { nc.style.display='none'; bi.style.display='block'; }
         }
 
-        function openP(id) { document.getElementById(id).classList.add('active'); }
-        function closeP(id) { document.getElementById(id).classList.remove('active'); }
-
-        function openW(u) {
-            document.getElementById('view').src = u;
-            document.getElementById('web-ui').style.display = 'block';
-        }
-        function closeW() {
-            document.getElementById('web-ui').style.display = 'none';
-            document.getElementById('view').src = '';
-        }
-
-        function addApp() {
-            const n = document.getElementById('an').value;
-            const u = document.getElementById('au').value;
+        function addExt(n, u) {
             if(!n || !u) return;
-            const g = document.getElementById('home');
+            const h = document.getElementById('home');
             const d = document.createElement('div');
             d.className = 'app';
-            d.onclick = () => openW(u);
-            d.innerHTML = `<div class="del-x" onclick="delA(event, this)">-</div><div class="icon-box" style="background:#eee; color:#333; font-size:40px; font-weight:bold;">${n[0].toUpperCase()}</div><span>${n}</span>`;
-            g.insertBefore(d, document.getElementById('edit-btn'));
-            ram -= 0.5; document.getElementById('ram-val').innerText = ram.toFixed(1);
-            addLog("App Installed: " + n);
+            d.onclick = () => openWeb(u);
+            d.innerHTML = `<div class="del-x" onclick="delA(event, this)">X</div><div class="icon-box" style="font-size:30px; font-weight:bold; color:#333;">${n[0]}</div><span>${n}</span>`;
+            h.insertBefore(d, document.getElementById('edit-btn'));
+            ram -= 0.4; document.getElementById('rv').innerText = ram.toFixed(1);
+            addLog("Instal Berhasil: " + n);
             closeP('store-p');
         }
 
-        function toggleEdit() {
-            isEdit = !isEdit;
-            document.querySelectorAll('.app').forEach(a => { if(a.id !== 'edit-btn') a.classList.toggle('editing', isEdit); });
-            document.getElementById('et-txt').innerText = isEdit ? "Selesai" : "Atur";
-        }
-
-        function delA(e, el) { e.stopPropagation(); el.parentElement.remove(); ram += 0.5; document.getElementById('ram-val').innerText = ram.toFixed(1); addLog("App Deleted"); }
-        
         function addLog(m) {
             const l = document.getElementById('logs');
             const d = document.createElement('div');
             d.innerText = "> " + m;
             l.prepend(d);
-            document.getElementById('snd').play();
+            document.getElementById('beep').play();
         }
+
+        function toggleEdit() {
+            isEdit = !isEdit;
+            document.querySelectorAll('.app').forEach(a => { if(a.id !== 'edit-btn') a.classList.toggle('editing', isEdit); });
+            document.getElementById('edit-txt').innerText = isEdit ? "Selesai" : "Atur";
+        }
+
+        function delA(e, el) { e.stopPropagation(); el.parentElement.remove(); ram += 0.4; document.getElementById('rv').innerText = ram.toFixed(1); addLog("App Dihapus"); }
+        function openP(id) { document.getElementById(id).classList.add('active'); }
+        function closeP(id) { document.getElementById(id).classList.remove('active'); }
+        function openWeb(u) { document.getElementById('view').src = u; document.getElementById('web-ui').style.display = 'block'; }
+        function closeWeb() { document.getElementById('web-ui').style.display = 'none'; document.getElementById('view').src = ''; }
     </script>
 </body>
 </html>
