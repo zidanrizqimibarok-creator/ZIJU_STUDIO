@@ -3,188 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIZET OS v4.8 TV PRO</title>
+    <title>BIZET OS v4.9 ULTRA</title>
     <style>
         :root { --ios-blue: #007aff; --bizet-red: #ff3b30; }
+        
+        /* SCREEN BRIGHTNESS OVERLAY */
+        #brightness-overlay {
+            position: fixed; inset: 0; background: black;
+            opacity: 0; pointer-events: none; z-index: 999999;
+        }
+
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: -apple-system, sans-serif; background: #000; overflow: hidden; color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #000; overflow: hidden; color: white;
         }
 
-        /* WALLPAPER REAL TV */
         #wallpaper {
             position: fixed; inset: 0; z-index: -1;
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=1920&auto=format&fit=crop');
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                        url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=1920&auto=format&fit=crop');
             background-size: cover; background-position: center;
+            transition: transform 2s ease;
         }
 
-        /* DYNAMIC ISLAND TV */
+        /* DYNAMIC ISLAND */
         #island {
             position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
             min-width: 160px; height: 38px; background: #000; border-radius: 20px;
             z-index: 50000; display: flex; align-items: center; justify-content: center;
             padding: 0 25px; border: 1px solid rgba(255,255,255,0.2);
             transition: all 0.6s cubic-bezier(0.1, 0.9, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        #island.active { width: 400px; height: 80px; background: #050505; border-color: var(--bizet-red); }
+        #island.active { width: 450px; height: 80px; background: #0a0a0a; }
 
-        /* STATUS BAR RAM */
-        #status-bar {
-            position: fixed; top: 10px; right: 20px; font-size: 0.8rem;
-            background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 50px;
+        /* BOOTING ANIMATION */
+        #boot {
+            position: fixed; inset: 0; background: #000; z-index: 90000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1s ease;
         }
+        .logo-anim {
+            font-size: 4rem; letter-spacing: 20px; font-weight: 100;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } }
 
         /* HOME SCREEN */
-        #home { height: 100vh; display: flex; flex-direction: column; align-items: center; opacity: 0; transition: 0.8s; }
-        .app-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-top: 160px; width: 90%; }
+        #home { height: 100vh; display: flex; flex-direction: column; align-items: center; opacity: 0; transition: 1.5s ease; }
+        .app-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-top: 180px; width: 85%; }
         
-        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; width: 120px; }
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; width: 120px; text-align: center; }
         .icon {
-            width: 85px; height: 85px; border-radius: 22px; background: #fff;
+            width: 90px; height: 90px; border-radius: 24px; background: #fff;
             display: flex; justify-content: center; align-items: center;
-            margin-bottom: 12px; transition: 0.3s; box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+            margin-bottom: 12px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .app-item:hover .icon { transform: translateY(-10px) scale(1.05); }
+        .app-item:hover .icon { transform: scale(1.1); box-shadow: 0 0 30px var(--ios-blue); }
 
-        .del-badge {
-            position: absolute; top: -8px; left: -8px; width: 30px; height: 30px;
-            background: red; color: white; border-radius: 50%; display: none;
-            justify-content: center; align-items: center; font-weight: bold; font-size: 20px;
+        /* NO SIGNAL 21:53 */
+        #no-signal {
+            position: fixed; inset: 0; background: #000; z-index: 1000000;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            background-image: url('https://media.giphy.com/media/oEI9uWUicG58Y/giphy.gif'); /* Static effect */
+            background-size: cover;
         }
-        .editing .del-badge { display: flex; }
 
-        /* PANELS */
+        /* SETTINGS SLIDER */
+        .slider-container { margin: 20px 0; padding: 10px; background: #eee; border-radius: 10px; }
+        input[type=range] { width: 100%; cursor: pointer; }
+
         .panel {
             position: fixed; top: 100%; left: 0; width: 100%; height: 100%;
-            background: #f2f2f7; color: #000; z-index: 10000; transition: 0.5s; overflow-y: auto;
+            background: #f2f2f7; color: #000; z-index: 10000; transition: 0.6s cubic-bezier(0.1, 0.8, 0.2, 1);
         }
         .panel.active { top: 0; }
-        .header { padding: 80px 40px 20px; font-size: 3rem; font-weight: 800; }
-
-        /* NO SIGNAL */
-        #no-signal {
-            position: fixed; inset: 0; background: #000; z-index: 999999;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            font-family: 'Courier New', monospace;
-        }
-
-        /* WEBVIEW */
-        #web-layer { position: fixed; inset: 0; background: #000; z-index: 9000; display: none; }
         iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
-<body onload="autoInit()">
+<body onclick="autoFullScreen()">
 
+    <div id="brightness-overlay"></div>
     <audio id="snd" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
 
-    <div id="status-bar">RAM: <span id="ram-val">12.0</span> GB FREE</div>
+    <div id="no-signal">
+        <h1 style="background:white; color:black; padding:10px 50px;">NO SIGNAL</h1>
+        <p style="color:white; text-shadow: 2px 2px #000;">BIZET OS AUTO-LOCK: 21:53</p>
+    </div>
+
+    <div id="boot">
+        <div class="logo-anim">BIZET</div>
+        <p style="color:#555; letter-spacing:5px; margin-top:20px;">v4.9 ULTRA TV</p>
+        <p style="color:var(--bizet-red); margin-top:50px; font-size:0.8rem;">TAP ANYWHERE TO START</p>
+    </div>
 
     <div id="island"><div id="clock">00:00</div></div>
-
-    <div id="no-signal">
-        <div style="background:#fff; color:#000; padding:15px 60px; font-weight:bold; font-size:3rem;">NO SIGNAL</div>
-        <p style="color:#333; margin-top:30px; font-size: 1.2rem;">BIZET OS AUTO-LOCK: 21:53</p>
-    </div>
-
-    <div id="boot" style="position:fixed; inset:0; background:#000; z-index:90000; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-        <h1 style="letter-spacing:15px; font-weight:100;">BIZET OS 4.8</h1>
-        <p style="color: #555;">TV EDITION - OPTIMIZING...</p>
-        <button onclick="bootNow()" id="btn-start" style="margin-top:30px; padding:20px 60px; background:red; color:white; border:none; border-radius:50px; font-weight:bold; cursor:pointer; font-size:1.2rem;">MASUK (FULL SCREEN)</button>
-    </div>
 
     <div id="wallpaper"></div>
 
     <div id="home">
         <div class="app-grid" id="main-grid">
-            <div class="app-item" onclick="openWeb('https://www.google.com', 0.2)">
-                <div class="icon"><img src="https://www.google.com/favicon.ico" width="40"></div>
+            <div class="app-item" onclick="openWeb('https://www.google.com')">
+                <div class="icon"><img src="https://www.google.com/favicon.ico" width="45"></div>
                 <span>Google</span>
             </div>
             <div class="app-item" onclick="openPanel('store-panel')">
                 <div class="icon" style="background: linear-gradient(#4cd964, #28a745); color:white; font-size:2.5rem;">📥</div>
                 <span>App Store</span>
             </div>
-            <div class="app-item" onclick="openPanel('gallery-panel')">
-                <div class="icon" style="background: var(--ios-blue); color:white; font-size:2.5rem;">🖼️</div>
-                <span>Gallery USB</span>
-            </div>
             <div class="app-item" onclick="openPanel('settings-panel')">
                 <div class="icon" style="background: #8e8e93; color:white; font-size:2.5rem;">⚙️</div>
                 <span>Settings</span>
             </div>
-            <div class="app-item" id="edit-btn" onclick="toggleEdit()">
+            <div class="app-item" onclick="toggleEdit()">
                 <div class="icon" style="background: #222; color:white; font-size:2rem;">🛠️</div>
-                <span id="edit-label">Atur App</span>
+                <span id="edit-label">Atur</span>
             </div>
-        </div>
-    </div>
-
-    <div id="store-panel" class="panel">
-        <div class="header">App Store</div>
-        <div style="padding:0 40px;">
-            <p style="font-size: 1.2rem;">Instal Web App (Memakan RAM Virtual)</p>
-            <input type="text" id="app-n" placeholder="Nama App" style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc; font-size:1rem;">
-            <input type="text" id="app-u" placeholder="https://..." style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc; font-size:1rem;">
-            <button onclick="addApp()" style="width:100%; padding:20px; background:var(--ios-blue); color:#fff; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">INSTAL (Konsumsi 0.5GB RAM)</button>
-            <button onclick="closePanel('store-panel')" style="width:100%; padding:20px; background:#ddd; border:none; border-radius:15px; margin-top:15px; font-size:1.1rem;">KEMBALI</button>
         </div>
     </div>
 
     <div id="settings-panel" class="panel">
-        <div class="header">Settings</div>
-        <div style="background:#fff; margin:30px; border-radius:20px; padding:10px;">
-            <div style="padding:25px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;" onclick="egg()">
-                <span>Versi OS TV</span> <b style="color:var(--ios-blue)">BIZET OS 4.8 PRO ></b>
+        <div style="padding:80px 40px;">
+            <h1>Settings</h1>
+            <div style="background:white; border-radius:20px; padding:20px; margin-top:20px;">
+                <label style="font-weight:bold;">Kecerahan Layar (Brightness)</label>
+                <div class="slider-container">
+                    <input type="range" min="0" max="0.8" step="0.1" value="0" oninput="changeBrightness(this.value)">
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                    <span>Virtual RAM</span> <b>12.0 GB</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                    <span>Versi</span> <b>BIZET OS 4.9 PRO</b>
+                </div>
             </div>
-            <div style="padding:25px; display:flex; justify-content:space-between;">
-                <span>Total RAM Sistem</span> <b>12.0 GB</b>
-            </div>
-            <div style="padding:25px; display:flex; justify-content:space-between; color:red;" onclick="location.reload()">
-                <span>Restart BIZET OS</span> <b>REBOOT ></b>
-            </div>
+            <button onclick="closePanel('settings-panel')" style="margin-top:30px; padding:20px 60px; border-radius:15px; background:#000; color:#fff; border:none; width:100%; font-weight:bold;">TUTUP</button>
         </div>
-        <button onclick="closePanel('settings-panel')" style="margin:40px; padding:20px 50px; border-radius:15px; background:#000; color:#fff; border:none;">TUTUP</button>
     </div>
 
-    <div id="web-layer">
-        <button onclick="closeWeb()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:20px 60px; border-radius:50px; border:none; background:#fff; font-weight:bold; z-index:9001; box-shadow:0 0 30px #000;">BACK TO HOME</button>
+    <div id="store-panel" class="panel">
+        <div style="padding:80px 40px;">
+            <h1>Web App Store</h1>
+            <input type="text" id="app-n" placeholder="Nama Aplikasi" style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc;">
+            <input type="text" id="app-u" placeholder="https://..." style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc;">
+            <button onclick="addApp()" style="width:100%; padding:20px; background:var(--ios-blue); color:#fff; border:none; border-radius:15px; font-weight:bold;">INSTAL SEKARANG</button>
+            <button onclick="closePanel('store-panel')" style="width:100%; padding:20px; background:#ddd; border:none; border-radius:15px; margin-top:15px;">BATAL</button>
+        </div>
+    </div>
+
+    <div id="web-layer" style="position:fixed; inset:0; background:#000; z-index:9000; display:none;">
+        <button onclick="closeWeb()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:15px 50px; border-radius:50px; border:none; background:#fff; font-weight:bold; z-index:9001;">HOME</button>
         <iframe id="view"></iframe>
     </div>
 
     <script>
         let isEdit = false;
-        let ramFree = 12.0;
+
+        function autoFullScreen() {
+            // Hilangkan booting
+            const boot = document.getElementById('boot');
+            if(boot.style.display !== 'none') {
+                const doc = document.documentElement;
+                if (doc.requestFullscreen) doc.requestFullscreen();
+                else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+                
+                boot.style.opacity = '0';
+                setTimeout(() => {
+                    boot.style.display = 'none';
+                    document.getElementById('home').style.opacity = '1';
+                    document.getElementById('wallpaper').style.transform = 'scale(1.1)';
+                }, 1000);
+            }
+        }
 
         function clock() {
             const d = new Date();
             const h = d.getHours();
             const m = d.getMinutes();
-            const timeStr = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0');
-            document.getElementById('clock').innerText = timeStr;
+            document.getElementById('clock').innerText = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0');
 
-            // NO SIGNAL 21:53
             if (h === 21 && m === 53) {
                 document.getElementById('no-signal').style.display = 'flex';
             }
         }
         setInterval(clock, 1000); clock();
 
-        function bootNow() {
-            // FORCE FULLSCREEN UNTUK TV
-            const doc = document.documentElement;
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-            
-            document.getElementById('boot').style.display = 'none';
-            document.getElementById('home').style.opacity = '1';
+        function changeBrightness(val) {
+            document.getElementById('brightness-overlay').style.opacity = val;
         }
 
         function openPanel(id) { document.getElementById(id).classList.add('active'); }
         function closePanel(id) { document.getElementById(id).classList.remove('active'); }
 
-        function openWeb(u, ramCost) {
-            if(ramFree < ramCost) return alert("RAM HABIS! Hapus aplikasi lain dulu, Bos.");
+        function openWeb(u) {
             document.getElementById('view').src = u;
             document.getElementById('web-layer').style.display = 'block';
         }
@@ -197,36 +210,22 @@
             const n = document.getElementById('app-n').value;
             const u = document.getElementById('app-u').value;
             if(!n || !u) return;
-            if(ramFree < 0.5) return alert("RAM GAK CUKUP!");
-
-            ramFree -= 0.5;
-            document.getElementById('ram-val').innerText = ramFree.toFixed(1);
-
             const grid = document.getElementById('main-grid');
             const div = document.createElement('div');
             div.className = 'app-item';
-            div.onclick = () => openWeb(u, 0.1);
-            div.innerHTML = `<div class="del-badge" onclick="removeApp(event, this, 0.5)">-</div><div class="icon" style="background:#eee; font-weight:bold; font-size:2rem; color:#333;">${n[0].toUpperCase()}</div><span>${n}</span>`;
-            
-            grid.insertBefore(div, document.getElementById('edit-btn'));
+            div.onclick = () => openWeb(u);
+            div.innerHTML = `<div class="icon" style="background:#eee; font-weight:bold; color:#333;">${n[0].toUpperCase()}</div><span>${n}</span>`;
+            grid.appendChild(div);
             notif("INSTALLED: " + n.toUpperCase());
             closePanel('store-panel');
-        }
-
-        function removeApp(e, el, ramReturn) {
-            e.stopPropagation();
-            el.parentElement.remove();
-            ramFree += ramReturn;
-            document.getElementById('ram-val').innerText = ramFree.toFixed(1);
-            notif("APP REMOVED - RAM RECOVERED");
         }
 
         function toggleEdit() {
             isEdit = !isEdit;
             document.querySelectorAll('.app-item').forEach(a => {
-                if(a.id !== 'edit-btn') a.classList.toggle('editing', isEdit);
+                a.style.animation = isEdit ? "jiggle 0.3s infinite" : "none";
             });
-            document.getElementById('edit-label').innerText = isEdit ? "Selesai" : "Atur App";
+            document.getElementById('edit-label').innerText = isEdit ? "Selesai" : "Atur";
         }
 
         function notif(t) {
@@ -237,12 +236,14 @@
             c.innerText = t;
             setTimeout(() => { i.classList.remove('active'); setTimeout(clock, 600); }, 3000);
         }
-
-        function egg() { 
-            document.body.style.filter = "hue-rotate(90deg)";
-            setTimeout(() => document.body.style.filter = "none", 1000);
-            notif("BIZET HYPER-RED MODE");
-        }
     </script>
+
+    <style>
+        @keyframes jiggle {
+            0% { transform: rotate(-1deg); }
+            50% { transform: rotate(1.5deg); }
+            100% { transform: rotate(-1deg); }
+        }
+    </style>
 </body>
 </html>
