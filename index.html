@@ -2,136 +2,158 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>BIZET OS v5.8 PROXIMA</title>
+    <title>BIZET OS v5.9 OMEGA FINAL</title>
     <style>
-        :root { --red: #ff3b30; --blue: #007aff; --glass: rgba(0,0,0,0.8); }
+        :root { --red: #ff3b30; --blue: #007aff; --glass: rgba(0,0,0,0.85); }
         body, html { margin:0; padding:0; width:100%; height:100%; font-family: 'Segoe UI', sans-serif; background:#000; overflow:hidden; color:white; }
         
+        /* Brightness Mask */
         #br-mask { position:fixed; inset:0; background:black; opacity:0; pointer-events:none; z-index:1000000; }
 
-        /* WALLPAPER METEOR JATUH KE BULAN */
-        #wallpaper { position:fixed; inset:0; z-index:-2; background: radial-gradient(circle at top right, #1b2735, #090a0f); }
-        .moon { position:absolute; bottom:50px; left:80px; width:150px; height:150px; background:#f5f5f5; border-radius:50%; box-shadow: 0 0 60px rgba(255,255,255,0.4); }
-        .meteor { position:absolute; width:100px; height:2px; background:linear-gradient(to left, white, transparent); transform:rotate(-45deg); opacity:0; animation: meteorfall 3s linear infinite; }
-        @keyframes meteorfall { 
-            0% { transform:translateX(500px) translateY(-200px) rotate(-45deg); opacity:1; } 
-            100% { transform:translateX(-500px) translateY(800px) rotate(-45deg); opacity:0; } 
-        }
+        /* WALLPAPER METEOR */
+        #wallpaper { position:fixed; inset:0; z-index:-2; background: radial-gradient(circle at top right, #1b2735, #000); }
+        .moon { position:absolute; bottom:50px; left:80px; width:120px; height:120px; background:#eee; border-radius:50%; box-shadow: 0 0 50px rgba(255,255,255,0.3); }
+        .meteor { position:absolute; width:120px; height:2px; background:linear-gradient(to left, white, transparent); transform:rotate(-45deg); opacity:0; animation: mfall 4s linear infinite; }
+        @keyframes mfall { 0% {transform:translateX(600px) translateY(-200px) rotate(-45deg); opacity:1;} 100% {transform:translateX(-600px) translateY(800px) rotate(-45deg); opacity:0;} }
 
-        /* DYNAMIC ISLANDS */
-        #isl-left { position:fixed; top:15px; left:20px; background:var(--glass); padding:8px 25px; border-radius:20px; border:1px solid #444; z-index:1000; font-weight:bold; }
-        #isl-right { position:fixed; top:15px; right:20px; background:var(--glass); padding:8px 15px; border-radius:20px; border:1px solid #444; z-index:1000; cursor:pointer; }
+        /* BOOTING ANIMATION */
+        #boot { position:fixed; inset:0; background:#000; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 100% {transform: rotate(360deg);} }
 
-        /* HOME SLIDER */
-        #home-wrapper { display: flex; width: 200vw; height: 100vh; transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .page { width: 100vw; height: 100vh; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 40px; padding: 50px; box-sizing: border-box; }
+        /* DYNAMIC ISLAND */
+        .isl { position:fixed; top:15px; background:var(--glass); border-radius:20px; border:1px solid #444; z-index:1000; padding:8px 20px; font-weight:bold; backdrop-filter:blur(10px); }
+        #isl-left { left:20px; }
+        #isl-right { right:20px; cursor:pointer; }
+
+        /* HOME SCREEN & SLIDER */
+        #main-container { display:flex; width:200vw; height:100vh; transition: 0.5s ease-in-out; }
+        .page { width:100vw; height:100vh; display:flex; flex-wrap:wrap; justify-content:center; align-content:center; gap:35px; padding:60px; box-sizing:border-box; }
         
-        .app { display:flex; flex-direction:column; align-items:center; width:120px; cursor:pointer; transition:0.3s; }
-        .app:hover { transform: scale(1.1); }
-        .icon { width:90px; height:90px; border-radius:22px; background:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 10px 30px #000; }
-        
-        /* HDMI & BIG CLOCK */
-        #hdmi-tag { position:fixed; top:80px; left:30px; background:orange; color:black; padding:5px 15px; border-radius:5px; font-weight:bold; font-size:12px; }
-        #big-clock { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:15vw; font-weight:900; opacity:0.05; z-index:-1; }
+        .app { display:flex; flex-direction:column; align-items:center; width:110px; cursor:pointer; position:relative; }
+        .icon { width:80px; height:80px; border-radius:20px; background:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:8px; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-size:30px; }
+        .app span { font-size:13px; font-weight:bold; text-shadow: 1px 1px 5px #000; }
 
-        /* TASKBAR (PINTASAN) */
-        #taskbar { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.1); padding:10px 30px; border-radius:40px; display:flex; gap:30px; backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.2); z-index:90000; }
-        .nav-btn { cursor:pointer; font-size:24px; opacity:0.7; transition:0.3s; }
-        .nav-btn:hover { opacity:1; transform:scale(1.2); }
+        /* EDIT MODE */
+        .editing { animation: jiggle 0.3s infinite; }
+        .del-btn { position:absolute; top:-5px; left:-5px; background:red; color:white; border-radius:50%; width:25px; height:25px; display:none; align-items:center; justify-content:center; font-size:12px; font-weight:bold; border:2px solid white; }
+        .editing .del-btn { display:flex; }
+        @keyframes jiggle { 0% {transform:rotate(-1deg);} 50% {transform:rotate(1.5deg);} }
 
-        /* WEB VIEW LAYER */
+        /* TASKBAR & PINTASAN */
+        #taskbar { position:fixed; bottom:25px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.1); padding:12px 35px; border-radius:40px; display:flex; gap:30px; backdrop-filter:blur(15px); border:1px solid rgba(255,255,255,0.2); z-index:90000; }
+        .t-btn { font-size:24px; cursor:pointer; transition:0.2s; }
+        .t-btn:hover { transform:scale(1.2); }
+
+        /* WEB LAYER */
         #web-ui { position:fixed; inset:0; background:#fff; z-index:80000; display:none; }
         iframe { width:100%; height:100%; border:none; }
 
-        /* NOTIF POPUP */
-        #notif-panel { position:fixed; top:70px; right:20px; width:300px; background:var(--glass); border-radius:15px; padding:20px; display:none; border:1px solid #444; backdrop-filter:blur(10px); z-index:10001; }
+        /* PANELS */
+        .panel { position:fixed; inset:0; background:#f2f2f7; color:#000; z-index:95000; display:none; padding:50px; overflow-y:auto; }
+        .panel.active { display:block; }
     </style>
 </head>
-<body onload="initOS()">
+<body onload="startOS()">
 
     <div id="br-mask"></div>
-    <div id="big-clock">00:00</div>
-    <div id="hdmi-tag">HDMI-1 CONNECTED</div>
-
-    <div id="isl-left">00:00 | SIGNAL OK</div>
-    <div id="isl-right" onclick="toggleNotif()">🔔 Notifikasi</div>
-
-    <div id="notif-panel">
-        <h4 style="margin:0">System Update</h4>
-        <p style="font-size:13px; color:#ccc;">Terimakasih sudah menggunakan OS kami. Ini adalah update terakhir untuk versi ini.</p>
+    <div id="boot">
+        <div class="spinner"></div>
+        <h1 style="letter-spacing:10px;">BIZET OS</h1>
+        <p id="b-text">Starting Omega Engine...</p>
     </div>
+
+    <div id="isl-left" class="isl">00:00 | SIGNAL OK</div>
+    <div id="isl-right" class="isl" onclick="openP('notif-p')">🔔 Notifikasi</div>
 
     <div id="wallpaper">
         <div class="moon"></div>
-        <div class="meteor" style="top:10%; right:10%; --d:0s"></div>
-        <div class="meteor" style="top:30%; right:5%; --d:1.5s"></div>
+        <div class="meteor" style="top:10%; right:20%; animation-delay:0s;"></div>
+        <div class="meteor" style="top:40%; right:5%; animation-delay:2s;"></div>
     </div>
 
-    <div id="home-wrapper">
-        <div class="page" id="p1">
-            <div class="app" onclick="openW('https://www.google.com')"><div class="icon" style="background:#eee;"><img src="https://www.google.com/favicon.ico" width="40"></div><span>Google</span></div>
-            <div class="app" onclick="openW('https://m.youtube.com')"><div class="icon" style="background:#f00;"><span style="color:white;font-weight:bold">YT</span></div><span>YouTube</span></div>
-            <div class="app" onclick="openW('https://m.tiktok.com')"><div class="icon" style="background:#000;"><span style="color:white;font-weight:bold">TK</span></div><span>TikTok</span></div>
-            <div class="app" onclick="openP('set-p')"><div class="icon" style="background:#8e8e93;"><span style="color:white;font-weight:bold">⚙️</span></div><span>Settings</span></div>
+    <div id="main-container">
+        <div class="page" id="home-p1">
+            <div class="app" onclick="openW('https://www.google.com')"><div class="del-btn" onclick="delApp(event, this)">X</div><div class="icon">🔍</div><span>Google</span></div>
+            <div class="app" onclick="openW('https://m.youtube.com')"><div class="del-btn" onclick="delApp(event, this)">X</div><div class="icon" style="background:#f00; color:#fff;">YT</div><span>YouTube</span></div>
+            <div class="app" onclick="openW('https://m.tiktok.com')"><div class="del-btn" onclick="delApp(event, this)">X</div><div class="icon" style="background:#000; color:#fff;">TK</div><span>TikTok</span></div>
+            <div class="app" onclick="openP('store-p')"><div class="del-btn" onclick="delApp(event, this)">X</div><div class="icon" style="background:#4cd964; color:#fff;">🛒</div><span>Store</span></div>
+            <div class="app" onclick="openP('set-p')"><div class="del-btn" onclick="delApp(event, this)">X</div><div class="icon" style="background:#8e8e93; color:#fff;">⚙️</div><span>Settings</span></div>
+            <div class="app" onclick="toggleEdit()"><div class="icon" style="background:#333; color:#fff;">✏️</div><span id="edit-txt">Atur</span></div>
         </div>
-        <div class="page" id="p2">
-            <div class="app" onclick="alert('Mirroring Active')"><div class="icon" style="background:#007aff;"><span style="color:white;font-weight:bold">📱</span></div><span>Mirroring</span></div>
-            <div class="app" onclick="openW('https://www.netflix.com')"><div class="icon" style="background:#000;"><span style="color:red;font-weight:bold">N</span></div><span>Netflix</span></div>
+        <div class="page" id="home-p2">
+            <div class="app" onclick="alert('Mirroring Ready')"><div class="del-btn" onclick="delApp(event, this)">X</div><div class="icon" style="background:var(--blue); color:#fff;">📱</div><span>Mirroring</span></div>
         </div>
     </div>
 
     <div id="taskbar">
-        <div class="nav-btn" onclick="slide(0)">🏠</div>
-        <div class="nav-btn" onclick="slide(1)">➡️</div>
-        <div class="nav-btn" onclick="closeW()" style="color:var(--red)">✖️</div>
+        <div class="t-btn" onclick="slide(0)">🏠</div>
+        <div class="t-btn" onclick="slide(1)">➡️</div>
+        <div class="t-btn" onclick="closeW()" style="color:var(--red)">✖️</div>
     </div>
 
-    <div id="web-ui">
-        <iframe id="view" src=""></iframe>
+    <div id="store-p" class="panel">
+        <h2>OMEGA STORE</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button onclick="install('Netflix','https://www.netflix.com','🎬')" style="padding:15px;">Netflix</button>
+            <button onclick="install('Facebook','https://m.facebook.com','🔵')" style="padding:15px;">Facebook</button>
+            <button onclick="install('Spotify','https://open.spotify.com','🎵')" style="padding:15px;">Spotify</button>
+        </div>
+        <button onclick="closeP('store-p')" style="width:100%; margin-top:30px; padding:15px; background:#000; color:#fff;">TUTUP</button>
     </div>
 
-    <div id="set-p" class="panel" style="position:fixed;inset:0;background:#f2f2f7;color:black;display:none;padding:50px;z-index:99999;">
-        <h1>BIZET SETTINGS</h1>
-        <p>RAM: 12GB OK</p>
-        <button onclick="this.parentElement.style.display='none'" style="padding:15px 40px;background:black;color:white;border-radius:10px;">CLOSE</button>
+    <div id="set-p" class="panel">
+        <h2>SYSTEM SETTINGS</h2>
+        <div style="background:#eee; padding:20px; border-radius:15px;">
+            <p><b>Kecerahan Layar (Brightness):</b></p>
+            <input type="range" min="0" max="0.9" step="0.1" value="0" style="width:100%" oninput="document.getElementById('br-mask').style.opacity = this.value">
+            <p style="margin-top:20px;"><b>OS Info:</b> BIZET v5.9 OMEGA FINAL</p>
+        </div>
+        <button onclick="closeP('set-p')" style="width:100%; margin-top:30px; padding:15px; background:#000; color:#fff;">KEMBALI</button>
     </div>
+
+    <div id="web-ui"><iframe id="view" src=""></iframe></div>
 
     <script>
-        function initOS() {
-            setInterval(updateClock, 1000);
-            updateClock();
-            document.body.addEventListener('click', () => {
+        let isEdit = false;
+        function startOS() {
+            setTimeout(() => {
+                document.getElementById('boot').style.display='none';
                 try { document.documentElement.requestFullscreen(); } catch(e){}
-            }, {once: true});
+            }, 3500);
+            setInterval(updateClock, 1000);
         }
 
         function updateClock() {
             const d = new Date();
             const t = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
             document.getElementById('isl-left').innerText = t + " | SIGNAL OK";
-            document.getElementById('big-clock').innerText = t;
         }
 
-        function slide(pageIndex) {
-            document.getElementById('home-wrapper').style.transform = `translateX(-${pageIndex * 100}vw)`;
+        function slide(idx) { document.getElementById('main-container').style.transform = `translateX(-${idx * 100}vw)`; }
+        function openW(u) { document.getElementById('view').src = u; document.getElementById('web-ui').style.display = 'block'; }
+        function closeW() { document.getElementById('web-ui').style.display = 'none'; document.getElementById('view').src = ''; }
+        function openP(id) { document.getElementById(id).classList.add('active'); }
+        function closeP(id) { document.getElementById(id).classList.remove('active'); }
+
+        function toggleEdit() {
+            isEdit = !isEdit;
+            document.querySelectorAll('.app').forEach(a => { if(a.innerText !== 'Atur') a.classList.toggle('editing', isEdit); });
+            document.getElementById('edit-txt').innerText = isEdit ? "Selesai" : "Atur";
         }
 
-        function openW(u) {
-            document.getElementById('view').src = u;
-            document.getElementById('web-ui').style.display = 'block';
-        }
+        function delApp(e, el) { e.stopPropagation(); el.parentElement.remove(); }
 
-        function closeW() {
-            document.getElementById('web-ui').style.display = 'none';
-            document.getElementById('view').src = '';
+        function install(n, u, i) {
+            const p = document.getElementById('home-p1');
+            const d = document.createElement('div');
+            d.className = 'app';
+            d.onclick = () => openW(u);
+            d.innerHTML = `<div class="del-btn" onclick="delApp(event, this)">X</div><div class="icon">${i}</div><span>${n}</span>`;
+            p.insertBefore(d, p.lastElementChild);
+            alert(n + " Berhasil dipasang!");
+            closeP('store-p');
         }
-
-        function toggleNotif() {
-            const n = document.getElementById('notif-panel');
-            n.style.display = (n.style.display === 'block') ? 'none' : 'block';
-        }
-
-        function openP(id) { document.getElementById(id).style.display = 'block'; }
     </script>
 </body>
 </html>
