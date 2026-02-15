@@ -2,139 +2,102 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>QWES TV.id v10 ULTIMATE</title>
+    <title>QWES TV.id v11 SUPREME</title>
     <style>
-        :root { --accent: #00f2fe; --red: #ff3b30; --glass: rgba(255,255,255,0.15); }
+        :root { --accent: #00f2fe; --red: #ff3b30; --glass: rgba(255,255,255,0.1); }
         body, html { margin:0; padding:0; width:100%; height:100%; font-family: 'Segoe UI', sans-serif; background:#000; overflow:hidden; color:white; }
 
-        /* BRIGHTNESS & KRACAK LAYER */
-        #br-mask { position:fixed; inset:0; background:black; opacity:0; pointer-events:none; z-index:1000000; }
-        #kracak-layer { position:fixed; inset:0; background:url('https://media.giphy.com/media/oEI9uWUicG58Y/giphy.gif'); opacity:0; pointer-events:none; z-index:900000; mix-blend-mode: overlay; }
-
-        /* WALLPAPER ULTRA */
+        /* WALLPAPER */
         #wallpaper { position:fixed; inset:0; z-index:-2; background: radial-gradient(circle at bottom left, #0d1b2a, #000); }
-        .moon { position:absolute; top:10%; right:10%; width:120px; height:120px; background:#fff; border-radius:50%; box-shadow: 0 0 50px rgba(255,255,255,0.3); }
+        .moon { position:absolute; top:8%; right:12%; width:100px; height:100px; background:#fff; border-radius:50%; box-shadow: 0 0 40px rgba(255,255,255,0.3); }
         .meteor { position:absolute; width:150px; height:2px; background:linear-gradient(90deg, #fff, transparent); transform:rotate(-45deg); opacity:0; animation: mfall 3s linear infinite; }
         @keyframes mfall { 0% {transform:translate(800px, -200px) rotate(-45deg); opacity:1;} 100% {transform:translate(-800px, 800px) rotate(-45deg); opacity:0;} }
 
-        /* DYNAMIC ISLAND */
-        #dynamic-island {
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-            width: 180px; height: 35px; background: #000; border-radius: 20px;
-            z-index: 2000000; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; align-items: center; justify-content: center; border: 1px solid #444;
-        }
-        #dynamic-island.active { width: 450px; height: 70px; background: rgba(20,20,20,0.9); border: 1px solid var(--red); }
-        #notif-text { font-size: 13px; font-weight: bold; color: var(--accent); display:none; }
-        #dynamic-island.active #notif-text { display: block; }
-
-        /* BOOTING */
-        #boot { position:fixed; inset:0; background:#000; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        .start-btn { padding: 20px 60px; background: var(--accent); color: #000; border: none; border-radius: 50px; font-weight: 900; font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 30px var(--accent); }
+        /* BOOTING (NO BUTTON) */
+        #boot { position:fixed; inset:0; background:#000; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; animation: fadeOut 1s forwards 4s; }
+        .loader { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% {transform:rotate(360deg);} }
+        @keyframes fadeOut { 100% {opacity:0; visibility:hidden;} }
 
         /* HOME CONTENT */
-        #home { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; transition: 1s; }
-        #big-clock { font-size: 9rem; font-weight: 100; margin-bottom: 10px; text-shadow: 0 0 20px rgba(0,210,255,0.5); }
-        .status-bar { margin-bottom: 40px; font-size: 14px; letter-spacing: 2px; color: #aaa; }
+        #home { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        #big-clock { font-size: 8rem; font-weight: 100; margin-bottom: 20px; }
 
-        /* GRID APPS */
-        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
-        .app { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:0.3s; width: 120px; }
-        .app:hover { transform: scale(1.15); }
-        .icon-box { width: 90px; height: 90px; border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 10px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); }
-        .app span { font-size: 14px; font-weight: bold; }
+        /* APP GRID */
+        #app-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 25px; padding: 20px; }
+        .app { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:0.3s; width: 110px; }
+        .app:hover { transform: scale(1.1); }
+        .icon-box { width: 85px; height: 85px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: bold; margin-bottom: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .app span { font-size: 13px; font-weight: 600; text-align: center; }
 
-        /* PANELS */
-        #web-ui { position:fixed; inset:0; background:#fff; z-index:100000; display:none; }
+        /* FULL SCREEN OVERLAYS */
+        .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:100000; display:none; padding:60px; }
+        #web-ui { position:fixed; inset:0; background:#fff; z-index:90000; display:none; }
         iframe { width:100%; height:100%; border:none; }
-        .exit-btn { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--red); color:#fff; padding:15px 40px; border-radius:50px; border:none; font-weight:bold; cursor:pointer; }
-        
-        .panel { position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:100001; display:none; padding:50px; }
+        .close-btn { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:var(--red); color:white; padding:15px 45px; border-radius:50px; border:none; font-weight:bold; cursor:pointer; }
     </style>
 </head>
-<body onload="checkTime()">
-
-    <div id="br-mask"></div>
-    <div id="kracak-layer"></div>
+<body onload="initSystem()">
 
     <div id="boot">
-        <h1 style="letter-spacing:15px; margin-bottom:40px;">QWES TV</h1>
-        <button class="start-btn" onclick="startOS()">MULAI SISTEM</button>
-        <p style="margin-top:20px; color:#555;">v10.0 ULTIMATE EDITION</p>
-    </div>
-
-    <div id="dynamic-island">
-        <div id="notif-text">Peringatan: Istirahat yang cukup, Bos!</div>
+        <h1 style="letter-spacing:10px;">QWES TV</h1>
+        <div class="loader"></div>
+        <p style="margin-top:20px; color:var(--accent);">SUPREME ENGINE v11</p>
     </div>
 
     <div id="wallpaper">
         <div class="moon"></div>
-        <div class="meteor" style="top:5%; right:20%; animation-delay:0s;"></div>
-        <div class="meteor" style="top:45%; right:5%; animation-delay:1.5s;"></div>
+        <div class="meteor" style="top:5%; right:25%;"></div>
     </div>
 
     <div id="home">
         <div id="big-clock">00:00</div>
-        <div class="status-bar">POLYTRON SMART | QWES NETWORK OK</div>
-
-        <div class="app-grid">
+        <div id="app-container">
             <div class="app" onclick="openApp('https://www.google.com')"><div class="icon-box" style="background:#fff; color:#4285F4;">G</div><span>Browser</span></div>
-            <div class="app" onclick="openApp('https://m.youtube.com')"><div class="icon-box" style="background:#FF0000; color:#fff;">YT</div><span>YouTube</span></div>
+            <div class="app" onclick="openApp('https://m.youtube.com')"><div class="icon-box" style="background:#f00; color:#fff;">YT</div><span>YouTube</span></div>
             <div class="app" onclick="openApp('https://m.tiktok.com')"><div class="icon-box" style="background:#000; color:#fff;">TK</div><span>TikTok</span></div>
-            <div class="app" onclick="openPanel('store-panel')"><div class="icon-box" style="background:#34A853; color:#fff;">🛒</div><span>Store</span></div>
-            <div class="app" onclick="openApp('https://www.netflix.com')"><div class="icon-box" style="background:#E50914; color:#fff;">N</div><span>Netflix</span></div>
-            <div class="app" onclick="toggleZrak()"><div class="icon-box" style="background:var(--accent); color:#000;">🤖</div><span>ZRAK AI</span></div>
-            <div class="app" onclick="toggleBrightness()"><div class="icon-box" style="background:#555; color:#fff;">☀️</div><span>Terang</span></div>
-            <div class="app" onclick="eggTrigger()"><div class="icon-box" style="background:#444; color:var(--accent);">Q</div><span>Info</span></div>
+            <div class="app" onclick="openOverlay('store-win')"><div class="icon-box" style="background:#34A853; color:#fff;">🛒</div><span>Store</span></div>
+            <div class="app" onclick="openOverlay('info-win')"><div class="icon-box" style="background:var(--accent); color:#000;">i</div><span>Info OS</span></div>
         </div>
     </div>
 
-    <div id="store-panel" class="panel">
+    <div id="info-win" class="overlay">
+        <h1>QWES TV.id - System Info</h1>
+        <hr>
+        <p>Version: 11.0 Supreme</p>
+        <p>Engine: Ultra Omega Final</p>
+        <p>Status: All Systems Nominal</p>
+        <p>Features: Auto-Full Screen, No-Noise, HD Icons</p>
+        <button class="close-btn" onclick="closeOverlay('info-win')">TUTUP INFO</button>
+    </div>
+
+    <div id="store-win" class="overlay">
         <h1>QWES APP STORE</h1>
-        <div class="app-grid">
-            <div class="app" onclick="alert('WhatsApp Segera Hadir')"><div class="icon-box" style="background:#25D366;">WA</div><span>WhatsApp</span></div>
-            <div class="app" onclick="alert('Spotify Segera Hadir')"><div class="icon-box" style="background:#1DB954;">SP</div><span>Spotify</span></div>
+        <p>Klik aplikasi untuk memasang ke Home Screen:</p>
+        <div id="app-container">
+            <div class="app" onclick="installApp('Netflix', 'https://www.netflix.com', '#E50914', 'N')"><div class="icon-box" style="background:#E50914;">N</div><span>Netflix</span></div>
+            <div class="app" onclick="installApp('Facebook', 'https://m.facebook.com', '#1877F2', 'F')"><div class="icon-box" style="background:#1877F2;">F</div><span>Facebook</span></div>
         </div>
-        <button class="exit-btn" onclick="closePanel('store-panel')">KEMBALI</button>
+        <button class="close-btn" onclick="closeOverlay('store-win')">KEMBALI</button>
     </div>
 
     <div id="web-ui">
         <iframe id="frame" src=""></iframe>
-        <button class="exit-btn" onclick="closeApp()">EXIT APP</button>
+        <button class="close-btn" onclick="closeApp()">EXIT APP</button>
     </div>
 
     <script>
-        let egg = 0;
+        function initSystem() {
+            // Auto Full Screen Force
+            document.addEventListener('click', function() {
+                const el = document.documentElement;
+                if(el.requestFullscreen) el.requestFullscreen();
+            }, {once: true});
 
-        function startOS() {
-            // Force Fullscreen
-            const doc = document.documentElement;
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            
-            document.getElementById('boot').style.display = 'none';
-            document.getElementById('home').style.opacity = '1';
-            setInterval(updateSystem, 1000);
-        }
-
-        function updateSystem() {
-            const d = new Date();
-            const h = d.getHours();
-            const m = d.getMinutes();
-            document.getElementById('big-clock').innerText = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0');
-
-            // JAM 10 MALAM LOGIC (22:00)
-            const island = document.getElementById('dynamic-island');
-            const kracak = document.getElementById('kracak-layer');
-            
-            if (h >= 22 || h < 4) {
-                island.classList.add('active');
-                if (d.getSeconds() % 15 === 0) { // Efek keresek tiap 15 detik
-                    kracak.style.opacity = "0.3";
-                    setTimeout(() => { kracak.style.opacity = "0"; }, 800);
-                }
-            } else {
-                island.classList.remove('active');
-            }
+            setInterval(() => {
+                const d = new Date();
+                document.getElementById('big-clock').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+            }, 1000);
         }
 
         function openApp(url) {
@@ -147,25 +110,18 @@
             document.getElementById('frame').src = '';
         }
 
-        function openPanel(id) { document.getElementById(id).style.display = 'block'; }
-        function closePanel(id) { document.getElementById(id).style.display = 'none'; }
+        function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
+        function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
 
-        function toggleBrightness() {
-            const b = document.getElementById('br-mask');
-            b.style.opacity = (b.style.opacity == "0.6") ? "0" : "0.6";
-        }
-
-        function toggleZrak() {
-            alert("ZRAK AI: Versi Ultimate v10 Aktif! Semua ikon APK sudah saya perbaiki supaya jelas di TV Bos.");
-        }
-
-        function eggTrigger() {
-            egg++;
-            if(egg >= 5) {
-                alert("EASTER EGG: QWES TV MODE PELANGI!");
-                document.body.style.background = "linear-gradient(45deg, red, blue, green)";
-                egg = 0;
-            }
+        function installApp(name, url, color, initial) {
+            const container = document.getElementById('app-container');
+            const newApp = document.createElement('div');
+            newApp.className = 'app';
+            newApp.onclick = () => openApp(url);
+            newApp.innerHTML = `<div class="icon-box" style="background:${color}; color:#fff;">${initial}</div><span>${name}</span>`;
+            container.appendChild(newApp);
+            alert(name + " ditambahkan ke Home Screen!");
+            closeOverlay('store-win');
         }
     </script>
 </body>
