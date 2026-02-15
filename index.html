@@ -3,191 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warung R&Z Center</title>
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <title>BIZET OS v4.8 TV PRO</title>
     <style>
-        :root { --primary: #ff4757; --success: #2ed573; --bg: #f1f2f6; --blue: #2196f3; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 350px; }
-        
-        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:999; display:flex; flex-direction:column; justify-content:center; align-items:center; }
-        .spin { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        
-        .header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
-        .container { padding: 10px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .menu-card { background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
-        .menu-card.sold-out { opacity: 0.5; filter: grayscale(1); }
-        .price { color: var(--primary); font-weight: bold; font-size: 12px; margin: 5px 0; display: block; }
-        .btn-tambah { width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 11px; }
-
-        /* KOTAK STATUS - PERBAIKAN */
-        #status-pesanan { 
-            display: none; background: var(--blue); color: white; padding: 15px; 
-            border-radius: 15px; margin: 10px; font-size: 13px; position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        :root { --ios-blue: #007aff; --bizet-red: #ff3b30; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: -apple-system, sans-serif; background: #000; overflow: hidden; color: white;
         }
-        .btn-close { position: absolute; top: 5px; right: 10px; color: white; font-size: 20px; font-weight: bold; cursor: pointer; }
 
-        .cart-section { position: fixed; bottom: 0; width: 100%; background: white; padding: 12px; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); border-radius: 20px 20px 0 0; box-sizing: border-box; z-index: 200; }
-        #cart-display { max-height: 50px; overflow-y: auto; font-size: 11px; background: #f9f9f9; padding: 5px; border-radius: 8px; margin-bottom: 5px; border: 1px dashed #ccc; }
-        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 12px; }
-        textarea { height: 40px; background: #fff9c4; }
-        .btn-order { background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; margin-top: 8px; font-size: 15px; }
+        /* WALLPAPER REAL TV */
+        #wallpaper {
+            position: fixed; inset: 0; z-index: -1;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+        }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* DYNAMIC ISLAND TV */
+        #island {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            min-width: 160px; height: 38px; background: #000; border-radius: 20px;
+            z-index: 50000; display: flex; align-items: center; justify-content: center;
+            padding: 0 25px; border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.6s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+        #island.active { width: 400px; height: 80px; background: #050505; border-color: var(--bizet-red); }
+
+        /* STATUS BAR RAM */
+        #status-bar {
+            position: fixed; top: 10px; right: 20px; font-size: 0.8rem;
+            background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 50px;
+        }
+
+        /* HOME SCREEN */
+        #home { height: 100vh; display: flex; flex-direction: column; align-items: center; opacity: 0; transition: 0.8s; }
+        .app-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-top: 160px; width: 90%; }
+        
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; width: 120px; }
+        .icon {
+            width: 85px; height: 85px; border-radius: 22px; background: #fff;
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 12px; transition: 0.3s; box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+        }
+        .app-item:hover .icon { transform: translateY(-10px) scale(1.05); }
+
+        .del-badge {
+            position: absolute; top: -8px; left: -8px; width: 30px; height: 30px;
+            background: red; color: white; border-radius: 50%; display: none;
+            justify-content: center; align-items: center; font-weight: bold; font-size: 20px;
+        }
+        .editing .del-badge { display: flex; }
+
+        /* PANELS */
+        .panel {
+            position: fixed; top: 100%; left: 0; width: 100%; height: 100%;
+            background: #f2f2f7; color: #000; z-index: 10000; transition: 0.5s; overflow-y: auto;
+        }
+        .panel.active { top: 0; }
+        .header { padding: 80px 40px 20px; font-size: 3rem; font-weight: 800; }
+
+        /* NO SIGNAL */
+        #no-signal {
+            position: fixed; inset: 0; background: #000; z-index: 999999;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* WEBVIEW */
+        #web-layer { position: fixed; inset: 0; background: #000; z-index: 9000; display: none; }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
-<body>
+<body onload="autoInit()">
 
-    <div id="loader"><div class="spin"></div><p>Menyambungkan...</p></div>
+    <audio id="snd" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
 
-    <div class="header">
-        <h3 style="margin:0">R&Z CENTER <span id="count-view" style="font-size:12px; background:white; color:red; padding:2px 6px; border-radius:10px">30</span></h3>
-        <span id="conn-status" style="font-size: 10px;">🟡 Menyambungkan...</span>
+    <div id="status-bar">RAM: <span id="ram-val">12.0</span> GB FREE</div>
+
+    <div id="island"><div id="clock">00:00</div></div>
+
+    <div id="no-signal">
+        <div style="background:#fff; color:#000; padding:15px 60px; font-weight:bold; font-size:3rem;">NO SIGNAL</div>
+        <p style="color:#333; margin-top:30px; font-size: 1.2rem;">BIZET OS AUTO-LOCK: 21:53</p>
     </div>
 
-    <div id="status-pesanan">
-        <span class="btn-close" onclick="document.getElementById('status-pesanan').style.display='none'">&times;</span>
-        <strong id="status-judul">Menunggu Konfirmasi...</strong><br>
-        <span id="status-note">Sedang diproses oleh penjual.</span><br>
-        <hr style="border: 0.5px solid rgba(255,255,255,0.3)">
-        <div style="display: flex; justify-content: space-between;">
-            <span>Belanjaan:</span> <span id="view-belanja">0</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-            <span>Ongkir:</span> <span id="view-ongkir">0</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-top: 5px; border-top: 1px solid white;">
-            <span>TOTAL BAYAR:</span> <span id="view-total">0</span>
+    <div id="boot" style="position:fixed; inset:0; background:#000; z-index:90000; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <h1 style="letter-spacing:15px; font-weight:100;">BIZET OS 4.8</h1>
+        <p style="color: #555;">TV EDITION - OPTIMIZING...</p>
+        <button onclick="bootNow()" id="btn-start" style="margin-top:30px; padding:20px 60px; background:red; color:white; border:none; border-radius:50px; font-weight:bold; cursor:pointer; font-size:1.2rem;">MASUK (FULL SCREEN)</button>
+    </div>
+
+    <div id="wallpaper"></div>
+
+    <div id="home">
+        <div class="app-grid" id="main-grid">
+            <div class="app-item" onclick="openWeb('https://www.google.com', 0.2)">
+                <div class="icon"><img src="https://www.google.com/favicon.ico" width="40"></div>
+                <span>Google</span>
+            </div>
+            <div class="app-item" onclick="openPanel('store-panel')">
+                <div class="icon" style="background: linear-gradient(#4cd964, #28a745); color:white; font-size:2.5rem;">📥</div>
+                <span>App Store</span>
+            </div>
+            <div class="app-item" onclick="openPanel('gallery-panel')">
+                <div class="icon" style="background: var(--ios-blue); color:white; font-size:2.5rem;">🖼️</div>
+                <span>Gallery USB</span>
+            </div>
+            <div class="app-item" onclick="openPanel('settings-panel')">
+                <div class="icon" style="background: #8e8e93; color:white; font-size:2.5rem;">⚙️</div>
+                <span>Settings</span>
+            </div>
+            <div class="app-item" id="edit-btn" onclick="toggleEdit()">
+                <div class="icon" style="background: #222; color:white; font-size:2rem;">🛠️</div>
+                <span id="edit-label">Atur App</span>
+            </div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="menu-grid" id="menu-list"></div>
+    <div id="store-panel" class="panel">
+        <div class="header">App Store</div>
+        <div style="padding:0 40px;">
+            <p style="font-size: 1.2rem;">Instal Web App (Memakan RAM Virtual)</p>
+            <input type="text" id="app-n" placeholder="Nama App" style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc; font-size:1rem;">
+            <input type="text" id="app-u" placeholder="https://..." style="width:100%; padding:20px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc; font-size:1rem;">
+            <button onclick="addApp()" style="width:100%; padding:20px; background:var(--ios-blue); color:#fff; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">INSTAL (Konsumsi 0.5GB RAM)</button>
+            <button onclick="closePanel('store-panel')" style="width:100%; padding:20px; background:#ddd; border:none; border-radius:15px; margin-top:15px; font-size:1.1rem;">KEMBALI</button>
+        </div>
     </div>
 
-    <div class="cart-section">
-        <div id="cart-display">Keranjang kosong...</div>
-        <textarea id="request" placeholder="Catatan: Rasa Pop Ice/Minuman, Pedas, dll"></textarea>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="nama" placeholder="Nama Anda" style="flex:1">
-            <select id="metode" style="flex:1">
-                <option value="COD">COD</option>
-                <option value="DANA">DANA</option>
-            </select>
+    <div id="settings-panel" class="panel">
+        <div class="header">Settings</div>
+        <div style="background:#fff; margin:30px; border-radius:20px; padding:10px;">
+            <div style="padding:25px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;" onclick="egg()">
+                <span>Versi OS TV</span> <b style="color:var(--ios-blue)">BIZET OS 4.8 PRO ></b>
+            </div>
+            <div style="padding:25px; display:flex; justify-content:space-between;">
+                <span>Total RAM Sistem</span> <b>12.0 GB</b>
+            </div>
+            <div style="padding:25px; display:flex; justify-content:space-between; color:red;" onclick="location.reload()">
+                <span>Restart BIZET OS</span> <b>REBOOT ></b>
+            </div>
         </div>
-        <input type="text" id="alamat" placeholder="Alamat & Patokan Rumah">
-        <button class="btn-order" onclick="gasOrder()">KIRIM PESANAN (<span id="total-cart">0</span>)</button>
+        <button onclick="closePanel('settings-panel')" style="margin:40px; padding:20px 50px; border-radius:15px; background:#000; color:#fff; border:none;">TUTUP</button>
+    </div>
+
+    <div id="web-layer">
+        <button onclick="closeWeb()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:20px 60px; border-radius:50px; border:none; background:#fff; font-weight:bold; z-index:9001; box-shadow:0 0 30px #000;">BACK TO HOME</button>
+        <iframe id="view"></iframe>
     </div>
 
     <script>
-        const ably = new Ably.Realtime('_5uX1A.i3oY3Q:-F3Wm3iLu9vzEUXraD6HVdeHjh_pxk7pEqyzCGwNhsg');
-        const channel = ably.channels.get('warung-rz');
+        let isEdit = false;
+        let ramFree = 12.0;
 
-        const menus = [
-            {id:25, n:"Es Teler Teko", p:25000}, {id:1, n:"Bakso Beranak", p:10000}, {id:2, n:"Bakso Telur", p:10000},
-            {id:3, n:"Bakso Keju", p:10000}, {id:4, n:"Mie Bakso", p:10000}, {id:5, n:"Mie Ayam", p:10000},
-            {id:6, n:"Soteng", p:10000}, {id:7, n:"Kupat Tahu", p:10000}, {id:8, n:"Siomay", p:10000},
-            {id:9, n:"Kebab", p:10000}, {id:10, n:"Lumpia Basah", p:10000}, {id:24, n:"Es Teler Besar", p:10000},
-            {id:104, n:"Sosis Bakar Besar", p:5000}, {id:11, n:"Mie Jebew", p:5000}, {id:12, n:"Batagorr", p:5000},
-            {id:13, n:"Burger", p:5000}, {id:14, n:"Wonton", p:5000}, {id:23, n:"Es Teler Kecil", p:5000},
-            {id:102, n:"Pop Ice (Semua Rasa)", p:5000}, {id:15, n:"Cordog Sosis", p:3000}, {id:16, n:"Cordog Moza", p:3000},
-            {id:17, n:"Dimsum Keju", p:2500}, {id:18, n:"Ayam Keju", p:2500}, {id:19, n:"Bola Rambutan", p:2500},
-            {id:105, n:"Sate Seafood", p:2000}, {id:106, n:"Sosis Bakar Kecil", p:2000}, {id:20, n:"Dimsum", p:2000},
-            {id:21, n:"Lumpia Ayam", p:2000}, {id:22, n:"Sempol", p:2000}, {id:101, n:"Minuman Saset (Tea Jus/Marimas)", p:1000}
-        ];
+        function clock() {
+            const d = new Date();
+            const h = d.getHours();
+            const m = d.getMinutes();
+            const timeStr = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0');
+            document.getElementById('clock').innerText = timeStr;
 
-        let soldOuts = [];
-        let keranjang = [];
-        let lastSentMessageId = null;
-
-        ably.connection.on('connected', () => {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('conn-status').innerText = "🟢 CENTER ONLINE";
-        });
-
-        // MENERIMA STATUS DARI CENTER KAMU
-        channel.subscribe('update-status', (msg) => {
-            // Kita cek apakah ID yang dibalas Center sama dengan ID pesan terakhir pembeli
-            if(msg.data.id === lastSentMessageId) {
-                document.getElementById('status-pesanan').style.display = 'block';
-                document.getElementById('status-judul').innerText = "✅ PESANAN " + msg.data.status;
-                document.getElementById('status-note').innerText = "Note Penjual: " + (msg.data.note || "-");
-                document.getElementById('view-belanja').innerText = "Rp " + msg.data.total.toLocaleString();
-                document.getElementById('view-ongkir').innerText = "Rp " + msg.data.ongkir.toLocaleString();
-                document.getElementById('view-total').innerText = "Rp " + (msg.data.total + msg.data.ongkir).toLocaleString();
-                
-                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
+            // NO SIGNAL 21:53
+            if (h === 21 && m === 53) {
+                document.getElementById('no-signal').style.display = 'flex';
             }
-        });
+        }
+        setInterval(clock, 1000); clock();
 
-        channel.subscribe('update-stok', (msg) => {
-            soldOuts = msg.data.soldOut;
-            render();
-        });
+        function bootNow() {
+            // FORCE FULLSCREEN UNTUK TV
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+            
+            document.getElementById('boot').style.display = 'none';
+            document.getElementById('home').style.opacity = '1';
+        }
 
-        function render() {
-            const list = document.getElementById('menu-list');
-            list.innerHTML = '';
-            menus.forEach(m => {
-                const isOut = soldOuts.includes(m.id);
-                list.innerHTML += `
-                    <div class="menu-card ${isOut ? 'sold-out' : ''}">
-                        <b>${m.n}</b>
-                        <span class="price">Rp ${m.p.toLocaleString()}</span>
-                        <button class="btn-tambah" ${isOut ? 'disabled' : ''} onclick="add(${m.id})">
-                            ${isOut ? 'HABIS' : '+ TAMBAH'}
-                        </button>
-                    </div>`;
+        function openPanel(id) { document.getElementById(id).classList.add('active'); }
+        function closePanel(id) { document.getElementById(id).classList.remove('active'); }
+
+        function openWeb(u, ramCost) {
+            if(ramFree < ramCost) return alert("RAM HABIS! Hapus aplikasi lain dulu, Bos.");
+            document.getElementById('view').src = u;
+            document.getElementById('web-layer').style.display = 'block';
+        }
+        function closeWeb() {
+            document.getElementById('web-layer').style.display = 'none';
+            document.getElementById('view').src = '';
+        }
+
+        function addApp() {
+            const n = document.getElementById('app-n').value;
+            const u = document.getElementById('app-u').value;
+            if(!n || !u) return;
+            if(ramFree < 0.5) return alert("RAM GAK CUKUP!");
+
+            ramFree -= 0.5;
+            document.getElementById('ram-val').innerText = ramFree.toFixed(1);
+
+            const grid = document.getElementById('main-grid');
+            const div = document.createElement('div');
+            div.className = 'app-item';
+            div.onclick = () => openWeb(u, 0.1);
+            div.innerHTML = `<div class="del-badge" onclick="removeApp(event, this, 0.5)">-</div><div class="icon" style="background:#eee; font-weight:bold; font-size:2rem; color:#333;">${n[0].toUpperCase()}</div><span>${n}</span>`;
+            
+            grid.insertBefore(div, document.getElementById('edit-btn'));
+            notif("INSTALLED: " + n.toUpperCase());
+            closePanel('store-panel');
+        }
+
+        function removeApp(e, el, ramReturn) {
+            e.stopPropagation();
+            el.parentElement.remove();
+            ramFree += ramReturn;
+            document.getElementById('ram-val').innerText = ramFree.toFixed(1);
+            notif("APP REMOVED - RAM RECOVERED");
+        }
+
+        function toggleEdit() {
+            isEdit = !isEdit;
+            document.querySelectorAll('.app-item').forEach(a => {
+                if(a.id !== 'edit-btn') a.classList.toggle('editing', isEdit);
             });
+            document.getElementById('edit-label').innerText = isEdit ? "Selesai" : "Atur App";
         }
 
-        function add(id) {
-            const item = menus.find(m => m.id === id);
-            keranjang.push(item);
-            updateUI();
+        function notif(t) {
+            document.getElementById('snd').play();
+            const i = document.getElementById('island');
+            const c = document.getElementById('clock');
+            i.classList.add('active');
+            c.innerText = t;
+            setTimeout(() => { i.classList.remove('active'); setTimeout(clock, 600); }, 3000);
         }
 
-        function updateUI() {
-            const disp = document.getElementById('cart-display');
-            const totalView = document.getElementById('total-cart');
-            let total = 0;
-            let names = keranjang.map(i => { total += i.p; return i.n; }).join(", ");
-            disp.innerHTML = keranjang.length === 0 ? "Keranjang kosong..." : `<b>Isi:</b> ${names}`;
-            totalView.innerText = "Rp " + total.toLocaleString();
+        function egg() { 
+            document.body.style.filter = "hue-rotate(90deg)";
+            setTimeout(() => document.body.style.filter = "none", 1000);
+            notif("BIZET HYPER-RED MODE");
         }
-
-        function gasOrder() {
-            const nama = document.getElementById('nama').value;
-            const alamat = document.getElementById('alamat').value;
-            const req = document.getElementById('request').value;
-            const met = document.getElementById('metode').value;
-
-            if(keranjang.length === 0 || !nama || !alamat) return alert("Lengkapi data!");
-
-            let totalBelanja = keranjang.reduce((s, i) => s + i.p, 0);
-            let detail = keranjang.map(i => i.n).join(", ");
-
-            // PROSES KIRIM PESANAN
-            channel.publish('pesanan-baru', {
-                nama: nama, metode: met, alamat: alamat,
-                detail: `${detail} | Catatan: ${req || '-'}`,
-                total: totalBelanja
-            }, (err) => {
-                // Ably akan memberikan message ID unik otomatis setelah pesan terkirim
-            });
-
-            // Kita ambil ID pesan dari Ably supaya sinkron dengan Center
-            channel.history((err, resultPage) => {
-                lastSentMessageId = resultPage.items[0].id;
-            });
-
-            alert("Terkirim! Kotak status akan muncul di atas saat penjual membalas.");
-            document.getElementById('status-pesanan').style.display = 'block';
-            document.getElementById('status-judul').innerText = "Menunggu Konfirmasi Penjual...";
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-        render();
     </script>
 </body>
 </html>
