@@ -2,203 +2,168 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>BIZET OS v5.4 FINAL</title>
+    <title>BIZET OS v5.6 SUPREME MIRROR</title>
     <style>
         :root { --blue: #007aff; --red: #ff3b30; --glass: rgba(0,0,0,0.7); }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Segoe UI', sans-serif; background: #000; overflow: hidden; color: white; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: sans-serif; background: #000; overflow: hidden; color: white; }
         
         #br-mask { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 1000000; }
 
-        /* WALLPAPER DENGAN FALLBACK */
-        #wallpaper {
-            position: fixed; inset: 0; z-index: -1;
-            background-color: #1a1a2e; /* Warna dasar jika gambar gagal */
-            background-image: url('https://image2url.com/r2/default/images/1771125151385-84b3701e-4544-4e6f-85a9-44a1809b4337.jpg');
-            background-size: cover; background-position: center;
-            transition: 1s;
-        }
+        /* WALLPAPER BINTANG BERGERAK */
+        #wallpaper { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at bottom, #1B2735 0%, #090A0F 100%); overflow: hidden; }
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: twinkle var(--d) infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
         /* DYNAMIC ISLANDS */
-        .island { position: fixed; top: 15px; background: var(--glass); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 50000; display: flex; align-items: center; justify-content: center; }
-        #isl-left { left: 20px; padding: 0 20px; height: 40px; font-weight: bold; font-size: 0.9rem; }
-        #isl-right { right: 20px; width: 40px; height: 40px; cursor: pointer; transition: 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); overflow: hidden; }
+        .island { position: fixed; top: 15px; background: var(--glass); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 50000; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
+        #isl-left { left: 20px; padding: 0 20px; height: 40px; cursor: pointer; font-weight: bold; }
+        #isl-right { right: 20px; width: 40px; height: 40px; cursor: pointer; overflow: hidden; }
         #isl-right.active { width: 280px; height: 350px; padding: 20px; flex-direction: column; align-items: flex-start; }
 
-        /* NEW BOOTING STYLE */
-        #boot { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #boot-info { margin-top: 20px; font-family: monospace; color: #0f0; font-size: 0.8rem; text-align: center; }
+        /* LARGE HOME CLOCK */
+        #home-clock { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 8rem; font-weight: 100; opacity: 0; transition: 1s; pointer-events: none; z-index: 10; }
+        #home-clock.show { opacity: 1; }
 
-        /* HOME GRID */
-        #home { height: 100vh; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 35px; opacity: 0; transition: 1s; padding-top: 50px; }
-        .app { display: flex; flex-direction: column; align-items: center; width: 110px; cursor: pointer; position: relative; transition: 0.3s; }
-        .app:hover { transform: scale(1.1); }
-        .icon-box { width: 85px; height: 85px; border-radius: 20px; background: #fff; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .app span { font-size: 13px; font-weight: bold; text-shadow: 1px 1px 3px #000; }
+        /* BOOTING */
+        #boot { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+
+        /* GRID APP */
+        #home { height: 100vh; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 30px; opacity: 0; transition: 1s; }
+        .app { display: flex; flex-direction: column; align-items: center; width: 100px; cursor: pointer; transition: 0.3s; }
+        .app:active { transform: scale(0.9); }
+        .icon-box { width: 85px; height: 85px; border-radius: 22px; background: #fff; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .app span { font-size: 12px; font-weight: bold; }
         svg { width: 45px; height: 45px; fill: #333; }
 
-        /* STORE LIST */
-        .store-item { background: white; color: black; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-add { background: var(--blue); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+        /* GANGGUAN SINYAL (10:40-11:00) */
+        #interference { position: fixed; inset: 0; background: url('https://media.giphy.com/media/oEI9uWUicG58Y/giphy.gif'); opacity: 0; pointer-events: none; z-index: 2000000; mix-blend-mode: screen; }
 
-        /* PANELS */
-        .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 100%; background: #f2f2f7; color: #000; z-index: 10000; transition: 0.5s; padding: 40px; box-sizing: border-box; overflow-y: auto; }
+        /* PANEL */
+        .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 100%; background: #f2f2f7; color: #000; z-index: 10000; transition: 0.5s; padding: 40px; box-sizing: border-box; }
         .panel.active { top: 0; }
-
-        #shutdown { position: fixed; inset: 0; background: #000; z-index: 2000000; display: none; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; }
-        .del-x { position: absolute; top: -5px; left: -5px; width: 25px; height: 25px; background: red; color: white; border-radius: 50%; display: none; justify-content: center; align-items: center; font-size: 12px; z-index: 5; }
-        .editing { animation: jiggle 0.3s infinite; }
-        .editing .del-x { display: flex; }
-        @keyframes jiggle { 0% {transform: rotate(-1deg)} 50% {transform: rotate(1.1deg)} }
+        
+        /* MIRRORING UI */
+        #mirror-layer { position: fixed; inset: 0; background: #000; z-index: 15000; display: none; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
-<body onload="bootFinal()">
+<body onload="startOS()">
 
     <div id="br-mask"></div>
-    <audio id="beep" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <div id="interference"></div>
+    <div id="home-clock">00:00</div>
 
-    <div id="shutdown">
-        <h1 style="color:var(--red); font-size: 3rem;">SYSTEM HALTED</h1>
-        <p>TIME LIMIT REACHED: 10:20</p>
-    </div>
-
-    <div id="isl-left" class="island">Memuat Waktu...</div>
-
+    <div id="isl-left" class="island" onclick="toggleClock()">00:00</div>
     <div id="isl-right" class="island" onclick="this.classList.toggle('active')">
-        <div id="notif-content" style="display:none; width:100%;">
-            <h3 style="margin-top:0;">Notifikasi</h3>
-            <div id="logs" style="font-size:0.8rem; color:#aaa;">- BIZET v5.4 Started</div>
+        <div id="notif-box" style="display:none; width:100%;">
+            <h3>System Log</h3>
+            <div id="logs" style="font-size:12px; color:#555;">- Mirroring Driver Loaded</div>
         </div>
-        <span id="bell">🔔</span>
+        <span>🔔</span>
     </div>
 
     <div id="boot">
-        <h1 style="letter-spacing:10px; margin:0;">BIZET OS</h1>
-        <div id="boot-info">
-            INITIALIZING KERNEL...<br>
-            LOADING TV INTERFACE...<br>
-            CHECKING RAM... [12.0 GB OK]
-        </div>
+        <h1 style="letter-spacing:15px;">BIZET OS</h1>
+        <p>V5.6 PLATINUM EDITION</p>
     </div>
 
     <div id="wallpaper"></div>
 
     <div id="home">
-        <div class="app" onclick="openWeb('https://www.google.com')">
+        <div class="app" onclick="openW('https://www.google.com')">
             <div class="icon-box"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
             <span>Google</span>
         </div>
+        <div class="app" onclick="openMirror()">
+            <div class="icon-box" style="background:var(--blue);"><svg viewBox="0 0 24 24" style="fill:white;"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM7 15h2v2H7v-2zm3-3h2v5h-2v-5zm3-2h2v7h-2v-7zm3-2h2v9h-2V8z"/></svg></div>
+            <span>Mirroring</span>
+        </div>
         <div class="app" onclick="openP('store-p')">
             <div class="icon-box" style="background:#4cd964;"><svg viewBox="0 0 24 24" style="fill:white;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></div>
-            <span>App Store</span>
+            <span>Store</span>
         </div>
         <div class="app" onclick="openP('set-p')">
             <div class="icon-box" style="background:#8e8e93;"><svg viewBox="0 0 24 24" style="fill:white;"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
             <span>Settings</span>
         </div>
-        <div class="app" id="edit-btn" onclick="toggleEdit()">
-            <div class="icon-box" style="background:#222;"><svg viewBox="0 0 24 24" style="fill:white;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></div>
-            <span id="edit-txt">Atur</span>
+    </div>
+
+    <div id="mirror-layer">
+        <h2 id="mirror-status">Mirroring: Ready to Connect</h2>
+        <p>Gunakan Fitur 'Cast' atau 'Smart View' di HP Anda</p>
+        <div style="width:200px; height:200px; border:2px dashed white; display:flex; align-items:center; justify-content:center; margin:20px;">
+            📶
         </div>
+        <button onclick="closeMirror()" style="padding:15px 50px; background:red; color:white; border-radius:50px; border:none; font-weight:bold;">BERHENTI</button>
     </div>
 
     <div id="store-p" class="panel">
-        <h2 style="margin-top:0;">BIZET WEB STORE</h2>
-        <div id="store-list">
-            <div class="store-item"><span>📺 YouTube</span> <button class="btn-add" onclick="addExt('YouTube','https://m.youtube.com')">Pasang</button></div>
-            <div class="store-item"><span>🎬 Netflix</span> <button class="btn-add" onclick="addExt('Netflix','https://www.netflix.com')">Pasang</button></div>
-            <div class="store-item"><span>🎵 TikTok</span> <button class="btn-add" onclick="addExt('TikTok','https://www.tiktok.com')">Pasang</button></div>
-            <div class="store-item"><span>💬 Facebook</span> <button class="btn-add" onclick="addExt('Facebook','https://m.facebook.com')">Pasang</button></div>
+        <h2>App Store</h2>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button onclick="install('YouTube','https://m.youtube.com','#f00')">YouTube</button>
+            <button onclick="install('Netflix','https://www.netflix.com','#000')">Netflix</button>
+            <button onclick="install('TikTok','https://m.tiktok.com','#000')">TikTok</button>
+            <button onclick="install('Facebook','https://m.facebook.com','#3b5998')">Facebook</button>
         </div>
-        <div style="margin-top:20px; border-top:1px solid #ccc; padding-top:10px;">
-            <p>Tambah Custom Link:</p>
-            <input type="text" id="an" placeholder="Nama App" style="width:100%; padding:10px; margin-bottom:10px;">
-            <input type="text" id="au" placeholder="https://..." style="width:100%; padding:10px; margin-bottom:10px;">
-            <button class="btn-add" style="width:100%;" onclick="addExt(document.getElementById('an').value, document.getElementById('au').value)">Pasang Custom</button>
-        </div>
-        <button onclick="closeP('store-p')" style="width:100%; margin-top:15px; padding:15px; border:none; background:#ccc;">Tutup</button>
+        <button onclick="closeP('store-p')" style="width:100%; margin-top:20px; padding:15px; background:#000; color:#fff;">TUTUP</button>
     </div>
 
     <div id="set-p" class="panel">
-        <h2 style="margin-top:0;">System Control</h2>
+        <h2>Settings</h2>
         <div style="background:white; padding:20px; border-radius:15px;">
-            <p><b>RAM Virtual:</b> <span id="rv">12.0</span> GB FREE</p>
-            <p><b>Kecerahan Layar:</b></p>
+            <p>RAM: 12.0 GB FREE</p>
             <input type="range" min="0" max="0.8" step="0.1" value="0" style="width:100%" oninput="document.getElementById('br-mask').style.opacity = this.value">
-            <p><b>Versi:</b> BIZET OS v5.4 [Polytron Optimised]</p>
         </div>
-        <button onclick="closeP('set-p')" style="width:100%; padding:20px; background:black; color:white; border-radius:15px; margin-top:20px;">KEMBALI</button>
-    </div>
-
-    <div id="web-ui" style="position:fixed; inset:0; background:white; z-index:9000; display:none;">
-        <iframe id="view" src="" style="width:100%; height:100%; border:none;"></iframe>
-        <button onclick="closeWeb()" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:15px 40px; background:red; color:white; border-radius:50px; font-weight:bold; border:none; z-index:9001;">TUTUP</button>
+        <button onclick="closeP('set-p')" style="width:100%; margin-top:20px; padding:15px; background:#000; color:#fff;">KEMBALI</button>
     </div>
 
     <script>
-        let isEdit = false; let ram = 12.0;
-
-        function bootFinal() {
+        function startOS() {
+            // Stars creation
+            for(let i=0; i<80; i++) {
+                let s = document.createElement('div');
+                s.className = 'star';
+                s.style.left = Math.random()*100+'%';
+                s.style.top = Math.random()*100+'%';
+                s.style.width = s.style.height = Math.random()*3+'px';
+                s.style.setProperty('--d', Math.random()*5+2+'s');
+                document.getElementById('wallpaper').appendChild(s);
+            }
             setTimeout(() => {
-                document.getElementById('boot').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('boot').style.display = 'none';
-                    document.getElementById('home').style.opacity = '1';
-                    try { document.documentElement.requestFullscreen(); } catch(e){}
-                }, 1000);
-            }, 4000);
-            setInterval(updateClock, 1000);
+                document.getElementById('boot').style.display='none';
+                document.getElementById('home').style.opacity='1';
+                try { document.documentElement.requestFullscreen(); } catch(e){}
+            }, 3500);
+            setInterval(loop, 1000);
         }
 
-        function updateClock() {
+        function loop() {
             const d = new Date();
-            const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
             const h = d.getHours(); const m = d.getMinutes();
-            
-            // SHUTDOWN AT 10:20
-            if(h === 10 && m === 20) { document.getElementById('shutdown').style.display = 'flex'; }
+            const time = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0');
+            document.getElementById('isl-left').innerText = time;
+            document.getElementById('home-clock').innerText = time;
 
-            document.getElementById('isl-left').innerText = h.toString().padStart(2,'0') + ":" + m.toString().padStart(2,'0') + " | " + d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
-            
-            // Update Notif Hub
-            const rh = document.getElementById('isl-right');
-            const nc = document.getElementById('notif-content');
-            const bi = document.getElementById('bell');
-            if(rh.classList.contains('active')) { nc.style.display='block'; bi.style.display='none'; }
-            else { nc.style.display='none'; bi.style.display='block'; }
+            // INTERFERENCE LOGIC (10:40 - 11:00)
+            const cur = (h*60)+m;
+            if(cur >= 640 && cur < 660) document.getElementById('interference').style.opacity = '0.4';
+            else document.getElementById('interference').style.opacity = '0';
         }
 
-        function addExt(n, u) {
-            if(!n || !u) return;
+        function toggleClock() { document.getElementById('home-clock').classList.toggle('show'); }
+        function openMirror() { document.getElementById('mirror-layer').style.display = 'flex'; }
+        function closeMirror() { document.getElementById('mirror-layer').style.display = 'none'; }
+        function install(n, u, c) {
             const h = document.getElementById('home');
             const d = document.createElement('div');
             d.className = 'app';
-            d.onclick = () => openWeb(u);
-            d.innerHTML = `<div class="del-x" onclick="delA(event, this)">X</div><div class="icon-box" style="font-size:30px; font-weight:bold; color:#333;">${n[0]}</div><span>${n}</span>`;
-            h.insertBefore(d, document.getElementById('edit-btn'));
-            ram -= 0.4; document.getElementById('rv').innerText = ram.toFixed(1);
-            addLog("Instal Berhasil: " + n);
+            d.onclick = () => openW(u);
+            d.innerHTML = `<div class="icon-box" style="background:${c}; color:white; font-size:30px;">${n[0]}</div><span>${n}</span>`;
+            h.appendChild(d);
             closeP('store-p');
         }
-
-        function addLog(m) {
-            const l = document.getElementById('logs');
-            const d = document.createElement('div');
-            d.innerText = "> " + m;
-            l.prepend(d);
-            document.getElementById('beep').play();
-        }
-
-        function toggleEdit() {
-            isEdit = !isEdit;
-            document.querySelectorAll('.app').forEach(a => { if(a.id !== 'edit-btn') a.classList.toggle('editing', isEdit); });
-            document.getElementById('edit-txt').innerText = isEdit ? "Selesai" : "Atur";
-        }
-
-        function delA(e, el) { e.stopPropagation(); el.parentElement.remove(); ram += 0.4; document.getElementById('rv').innerText = ram.toFixed(1); addLog("App Dihapus"); }
         function openP(id) { document.getElementById(id).classList.add('active'); }
         function closeP(id) { document.getElementById(id).classList.remove('active'); }
-        function openWeb(u) { document.getElementById('view').src = u; document.getElementById('web-ui').style.display = 'block'; }
-        function closeWeb() { document.getElementById('web-ui').style.display = 'none'; document.getElementById('view').src = ''; }
+        function openW(u) { window.open(u, '_blank'); }
     </script>
 </body>
 </html>
